@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --primary-color: #6B8CB8;
+    --primary-light: #F2F6FA;
+    --primary-dark: #4F6D96;
+    --accent-gold: #E5A84B;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Authentic Japanese Kanji Ruby / Furigana Typography */
+  ruby {
+    display: inline-flex;
+    flex-direction: column-reverse;
+    vertical-align: bottom;
+    text-align: center;
+    line-height: 1.15;
+    margin: 0 1px;
+  }
+
+  rt {
+    display: block;
+    font-size: 0.68em;
+    font-weight: 700;
+    line-height: 1;
+    color: currentColor;
+    opacity: 1;
+    letter-spacing: -0.01em;
+    user-select: none;
+    text-align: center;
+    transform: translateY(-1px);
+  }
+
+  /* Prevent text wrapping inside buttons and badges */
+  .nowrap-label {
+    white-space: nowrap;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(150, 150, 150, 0.25);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(150, 150, 150, 0.4);
+  }
+}
+
+/* 3D card flip helper */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}

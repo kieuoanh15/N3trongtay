@@ -1,0 +1,34 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with study progress, gamification stats, and avatar customizations",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique Google / Firebase Auth ID" },
+        "email": { "type": "string", "format": "email", "description": "User email address" },
+        "fullName": { "type": "string", "description": "Display name of the student" },
+        "photoURL": { "type": "string", "description": "Avatar photo URL" },
+        "gold": { "type": "number", "description": "Accumulated study gold coins" },
+        "streakDays": { "type": "number", "description": "Consecutive study streak days" },
+        "dayCount": { "type": "number", "description": "Current day out of 90-day roadmap" },
+        "equippedAvatar": { "type": "string", "description": "ID of currently equipped avatar" },
+        "equippedCostume": { "type": "string", "description": "ID of currently equipped costume" },
+        "unlockedItems": {
+          "type": "array",
+          "description": "List of unlocked avatar and costume IDs",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "fullName", "gold", "streakDays"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private student data, accessible only by the authenticated owner"
+    }
+  }
+}

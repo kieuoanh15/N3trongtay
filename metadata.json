@@ -1,0 +1,6 @@
+{
+  "name": "N3 trong tay",
+  "description": "Ứng dụng luyện thi JLPT N3 trong 3 tháng: Từ vựng Mimikara Oboeru, Ngữ pháp, Flashcard tự động, Luyện viết Kanji theo nét, Đọc hiểu có giải thích chi tiết, Thi thử JLPT N3 & Nghe hiểu, Hội thoại AI và Đua Top Gamification.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
