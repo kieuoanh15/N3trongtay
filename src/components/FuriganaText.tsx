@@ -17,9 +17,14 @@ export const FuriganaText: React.FC<FuriganaTextProps> = ({
 }) => {
   if (!content) return null;
 
+  // Normalize parenthesis notation 漢字(かんじ) or 漢字（かんじ） to <ruby> tags if not already formatted
+  const activeContent = content.includes('<ruby>')
+    ? content
+    : content.replace(/([\u4e00-\u9faf]+)[(（]([\u3040-\u309f]+)[)）]/g, '<ruby>$1<rt>$2</rt></ruby>');
+
   // 1. If content contains <ruby> tags, parse them into safe React elements
-  if (content.includes('<ruby>') || content.includes('<ruby ')) {
-    const parts = parseRubyHtml(content);
+  if (activeContent.includes('<ruby>') || activeContent.includes('<ruby ')) {
+    const parts = parseRubyHtml(activeContent);
     return (
       <span className={`inline-flex flex-wrap items-end gap-x-0.5 leading-relaxed ${className}`}>
         {parts.map((part, index) => {

@@ -54,6 +54,8 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
   const [isListening, setIsListening] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const isSendingRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -63,12 +65,39 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
     scrollToBottom();
   }, [messages, isLoading]);
 
+  // Clean up speech recognition on component unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, []);
+
   const playAudio = (text: string) => {
     playJapaneseAudio(text, 0.9);
   };
 
+  // Stop listening cleanly
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch {
+        // ignore
+      }
+      recognitionRef.current = null;
+    }
+    setIsListening(false);
+  };
+
   // Reset conversation to start fresh
   const handleResetConversation = () => {
+    stopListening();
     setMessages([INITIAL_AI_GREETING]);
     setInputVal('');
   };
@@ -82,32 +111,49 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
     }
 
     if (isListening) {
-      setIsListening(false);
+      stopListening();
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ja-JP';
-    recognition.interimResults = false;
+    // Stop any existing instance first
+    stopListening();
 
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (e: any) => {
-      const transcript = e.results[0][0].transcript;
-      setInputVal(prev => prev ? `${prev} ${transcript}` : transcript);
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ja-JP';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (e: any) => {
+        const transcript = e.results?.[0]?.[0]?.transcript?.trim();
+        if (transcript) {
+          // Set the recognized Japanese speech directly without duplicating previous fragments
+          setInputVal(transcript);
+        }
+        setIsListening(false);
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
       setIsListening(false);
-    };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-
-    recognition.start();
+    }
   };
 
   // Send message to Gemini AI Speaking API
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!inputVal.trim() || isLoading) return;
-
     const userText = inputVal.trim();
+    if (!userText || isSendingRef.current) return;
+
+    // Stop speech recognition immediately if active
+    stopListening();
+
+    isSendingRef.current = true;
+    setIsLoading(true);
     setInputVal('');
 
     const newMsgs: ChatMessage[] = [
@@ -115,10 +161,10 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
       { role: 'user', contentJa: userText },
     ];
     setMessages(newMsgs);
-    setIsLoading(true);
 
     try {
-      const historyPayload = messages.map(m => ({
+      // Send recent turns of history to provide deep context without token waste
+      const historyPayload = messages.slice(-12).map(m => ({
         role: m.role,
         content: m.contentJa,
       }));
@@ -133,34 +179,41 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
       });
 
       const data = await res.json();
-      if (data.replyJa) {
+      const replyJa = data.replyJa || data.fallback?.replyJa;
+      if (replyJa) {
+        const replyFurigana = data.replyFurigana || data.fallback?.replyFurigana || replyJa;
+        const replyVi = data.replyVi || data.fallback?.replyVi || '';
+        const feedbackVi = data.feedbackVi || data.fallback?.feedbackVi;
+
         setMessages(prev => [
           ...prev,
           {
             role: 'model',
-            contentJa: data.replyJa,
-            contentFurigana: data.replyFurigana || data.replyJa,
-            contentVi: data.replyVi || '',
-            feedbackVi: data.feedbackVi || undefined,
+            contentJa: replyJa,
+            contentFurigana: replyFurigana,
+            contentVi: replyVi,
+            feedbackVi: feedbackVi,
           },
         ]);
         onAddGold(15); // Reward 15 gold per turn
-        playAudio(data.replyJa);
+        playAudio(replyJa);
       }
-    } catch {
+    } catch (error) {
+      console.error('Speaking chat network error:', error);
       // Fallback response if network issue
       setMessages(prev => [
         ...prev,
         {
           role: 'model',
-          contentJa: 'よく分かりました！最近、日本のアニメや音楽で好きなものはありますか。',
-          contentFurigana: 'よく<ruby>分<rt>わ</rt></ruby>かりました！<ruby>最近<rt>さいきん</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>のアニメや<ruby>音楽<rt>おんがく</rt></ruby>で<ruby>好<rt>す</rt></ruby>きなものはありますか。',
-          contentVi: 'Tôi hiểu rồi! Gần đây bạn có thích anime hay âm nhạc Nhật Bản nào không?',
-          feedbackVi: 'Đã nhận được câu trả lời của bạn. Bạn diễn đạt rất rõ ràng!',
+          contentJa: 'すみません、通信が少し途切れてしまいました。もう一度言っていただけますか？',
+          contentFurigana: 'すみません、<ruby>通信<rt>つうしん</rt></ruby>が<ruby>少<rt>すこ</rt></ruby>し<ruby>途切<rt>とぎ</rt></ruby>れてしまいました。もう<ruby>一度<rt>いちど</rt></ruby><ruby>言<rt>い</rt></ruby>っていただけますか？',
+          contentVi: 'Xin lỗi bạn, đường truyền vừa bị gián đoạn một chút. Bạn có thể nói lại được không?',
+          feedbackVi: 'Đường truyền mạng bị gián đoạn tạm thời. Bạn hãy thử nói hoặc gửi lại nhé!',
         },
       ]);
     } finally {
       setIsLoading(false);
+      isSendingRef.current = false;
     }
   };
 

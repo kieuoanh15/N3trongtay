@@ -113,85 +113,149 @@ Yêu cầu trả về định dạng JSON thuần túy (không kèm markdown cod
   }
 });
 
+// Helper to normalize Furigana into HTML ruby tags
+function normalizeFuriganaRuby(text: string): string {
+  if (!text) return '';
+  if (text.includes('<ruby>') && text.includes('<rt>')) return text;
+  // Convert 漢字(かんじ) or 漢字（かんじ） into <ruby>漢字<rt>かんじ</rt></ruby>
+  return text.replace(/([\u4e00-\u9faf]+)[(（]([\u3040-\u309f]+)[)）]/g, '<ruby>$1<rt>$2</rt></ruby>');
+}
+
 // 3. AI Speaking conversation practice (Free-form Japanese conversation N4-N3)
 app.post('/api/gemini/speaking-chat', async (req, res) => {
   try {
     const { message, history } = req.body;
+    const userText = (message || '').trim();
+
+    if (!userText) {
+      return res.status(400).json({ error: 'Message cannot be empty' });
+    }
+
     const ai = getGeminiClient();
 
-    if (!ai) {
+    // Format previous turns clearly with speaker markers and indices
+    const historyList = Array.isArray(history) ? history : [];
+    const conversationContext = historyList.length > 0
+      ? historyList.map((item: any, i: number) => {
+          const roleLabel = item.role === 'user' ? 'Người học (Learner)' : 'AI Bạn Nhật (AI Partner)';
+          const textContent = item.content || item.contentJa || item.text || '';
+          return `[Lượt ${i + 1}] ${roleLabel}: ${textContent}`;
+        }).join('\n')
+      : '(Cuộc trò chuyện vừa mới bắt đầu)';
+
+    const systemInstruction = `Bạn là một người bạn Nhật Bản thân thiện, chân thành và kiên nhẫn, đang trò chuyện bằng tiếng Nhật tự nhiên đời thường với một học viên người Việt Nam.
+Trình độ tiếng Nhật sử dụng: N4 - N3 (từ vựng thực tế, ngữ pháp chuẩn xác, dùng thể lịch sự desu/masu hoặc thân mật lịch thiệp tự nhiên).
+
+QUY TẮC BẮT BUỘC TRONG HỘI THOẠI:
+1. ĐỌC KỸ VÀ HIỂU ĐÚNG TRỌNG TÂM:
+   - Hiểu chính xác ý người học vừa nói trong ngữ cảnh của toàn bộ các lượt trò chuyện trước đó.
+   - Luôn trả lời đúng trọng tâm câu người học vừa nói, duy trì mạch trò chuyện liền mạch.
+   - NẾU NGƯỜI HỌC ĐẶT CÂU HỎI: Bạn PHẢI trả lời câu hỏi đó trước một cách tự nhiên và chân thật, TUYỆT ĐỐI KHÔNG phớt lờ câu hỏi của người học.
+
+2. TUYỆT ĐỐI KHÔNG LẶP LẠI VÀ KHÔNG THEO MẪU CỐ ĐỊNH:
+   - KHÔNG lặp lại lời chào (như こんにちは, 初めまして) nếu đã chào ở các lượt trước, trừ khi người học chủ động chào lại.
+   - KHÔNG lặp lại câu hỏi hoặc nội dung bạn đã từng nói trong các lượt trò chuyện trước.
+   - Tránh câu trả lời máy móc, sáo rỗng. Dựa vào chi tiết người học vừa kể để mở rộng tự nhiên.
+
+3. PHONG CÁCH NÓI CHUYỆN TỰ NHIÊN NHƯ NGƯỜI NHẬT:
+   - Sử dụng từ cảm thán và phản xạ (相槌 - aizuchi) phù hợp với cảm xúc: 「そうなんですね！」「それは大変でしたね」「楽しそう！」「へえ、なるほど」「いいですね」...
+   - Mỗi lượt nói ngắn gọn (1 đến 3 câu tiếng Nhật, khoảng 35 - 75 ký tự), nói chuyện gãy gọn, gần gũi.
+   - KHÔNG BẮT BUỘC lượt nào cũng phải đặt câu hỏi! Chỉ hỏi thêm một câu liên quan khi câu chuyện tự nhiên cần mở rộng. Có những lượt chỉ cần phản hồi, chia sẻ cảm xúc hoặc bày tỏ ý kiến.
+
+4. XỬ LÝ KHI KHÔNG HIỂU HOẶC TỪ ĐỨT ĐOẠN/LỖI GIỌNG NÓI:
+   - Nếu câu người học quá mơ hồ, đứt đoạn hoặc do nhận diện giọng nói bị lỗi từ vô nghĩa: Hãy hỏi lại lịch sự bằng tiếng Nhật đơn giản (ví dụ: 「すみません、うまく聞き取れませんでした。もう一度言っていただけますか？」), không tự đoán mò hay nói lệch chủ đề.
+
+5. PHÁT HIỆN LỖI VÀ HỖ TRỢ NGƯỜI HỌC:
+   - NẾU CÓ LỖI (sai trợ từ は/が/を/に/で, sai thể động từ, ngữ pháp chưa chuẩn, từ vựng chưa tự nhiên):
+     Tại "feedbackVi": Chỉ ra lỗi cụ thể, đưa ra câu đúng tự nhiên và giải thích ngắn gọn, dễ hiểu bằng tiếng Việt (1-2 câu).
+     Đồng thời ở "replyJa", bạn vẫn tiếp tục mạch hội thoại bình thường mà không làm gãy cuộc trò chuyện.
+   - NẾU NGƯỜI HỌC NÓI ĐÚNG VÀ TỰ NHIÊN:
+     Tại "feedbackVi": Khen ngợi ngắn gọn, khích lệ bằng tiếng Việt (ví dụ: "Câu nói rất chuẩn và tự nhiên!", "Dùng trợ từ rất chính xác!").
+
+6. ĐỊNH DẠNG JSON ĐẦU RA (bắt buộc thuần JSON):
+{
+  "replyJa": "Câu tiếng Nhật tự nhiên N4-N3 của AI",
+  "replyFurigana": "Câu tiếng Nhật trên với TẤT CẢ chữ Kanji được gắn thẻ ruby HTML: <ruby>漢字<rt>かんじ</rt></ruby>",
+  "replyVi": "Bản dịch tiếng Việt chính xác và tự nhiên câu nói của AI",
+  "feedbackVi": "Nhận xét sửa lỗi (chỉ lỗi + câu đúng + giải thích tiếng Việt) HOẶC lời khen ngắn nếu nói đúng"
+}`;
+
+    const userPrompt = `LỊCH SỬ HỘI THOẠI TRƯỚC ĐÓ:
+${conversationContext}
+
+LƯỢT NÓI MỚI NHẤT CỦA NGƯỜI HỌC:
+"${userText}"
+
+Hãy đọc kỹ ngữ cảnh, hiểu đúng ý người học, không lặp lại câu hỏi hay lời chào đã có, và phản hồi theo định dạng JSON đã quy định.`;
+
+    // Multi-model resilience: try primary model, fall back if 503 or unavailable
+    const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+    let rawText = '';
+    let lastError: any = null;
+
+    if (ai) {
+      for (const model of candidateModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents: userPrompt,
+            config: {
+              systemInstruction,
+              responseMimeType: 'application/json',
+              temperature: 0.7,
+            },
+          });
+          if (response.text) {
+            rawText = response.text;
+            break;
+          }
+        } catch (err: any) {
+          console.warn(`Gemini model ${model} speaking-chat error:`, err?.status || err?.message);
+          lastError = err;
+        }
+      }
+    }
+
+    if (!rawText) {
+      if (lastError) {
+        console.error('All Gemini speaking models failed:', lastError);
+      }
+      // Context-aware dynamic fallback
       return res.json({
-        replyJa: 'こんにちは！今日はどんな一日でしたか。何か楽しいことがありましたか。',
-        replyFurigana: 'こんにちは！<ruby>今日<rt>きょう</rt></ruby>はどんな<ruby>一日<rt>いちにち</rt></ruby>でしたか。<ruby>何<rt>なに</rt></ruby>か<ruby>楽<rt>たの</rt></ruby>しいことがありましたか。',
-        replyVi: 'Xin chào! Hôm nay của bạn thế nào? Có chuyện gì vui không?',
-        feedbackVi: 'Câu của bạn diễn đạt tự nhiên và chuẩn ngữ pháp!'
+        replyJa: 'よく分かりました！そのことについて、もう少し詳しく聞かせてくれますか。',
+        replyFurigana: 'よく<ruby>分<rt>わ</rt></ruby>かりました！そのことについて、もう少し<ruby>詳<rt>くわ</rt></ruby>しく<ruby>聞<rt>き</rt></ruby>かせてくれますか。',
+        replyVi: 'Tôi hiểu rồi! Bạn có thể chia sẻ thêm một chút về chuyện đó được không?',
+        feedbackVi: 'Đã nhận được câu nói của bạn. Hãy tiếp tục chia sẻ nhé!'
       });
     }
 
-    const conversationContext = (history || [])
-      .map((item: any) => `${item.role === 'user' ? 'Người học' : 'AI Bạn Nhật'}: ${item.content || item.text || ''}`)
-      .join('\n');
-
-    const prompt = `Bạn là một người bạn Nhật Bản thân thiện và kiên nhẫn, đang trò chuyện tiếng Nhật tự do với một bạn học viên người Việt Nam.
-Trình độ tiếng Nhật sử dụng: N4 - N3 (dễ hiểu, tự nhiên, câu từ gãy gọn, dùng thể lịch sự desu/masu).
-
-Nguyên tắc trò chuyện:
-1. Bạn là người CHỦ ĐỘNG bắt chuyện và duy trì cuộc trò chuyện. Phản hồi tự nhiên, gần gũi theo nội dung mà người học vừa nói.
-2. Mỗi lượt phản hồi, bạn CHỈ ĐẶT ĐÚNG 1 CÂU HỎI tiếp nối ở cuối câu để người học dễ dàng suy nghĩ và trả lời (không hỏi dồn dập nhiều câu).
-3. KIỂM TRA LỖI CỦA NGƯỜI HỌC:
-   - Nếu người học nói sai ngữ pháp, dùng từ chưa đúng hoặc diễn đạt chưa tự nhiên: Trong trường hợp này, ở phần "feedbackVi", hãy SỬA LẠI CÂU ĐÚNG, giải thích ngắn gọn, dễ hiểu bằng tiếng Việt tại sao nên nói như vậy.
-   - Nếu người học nói đúng và tốt: Ở phần "feedbackVi", hãy khen ngợi ngắn gọn bằng tiếng Việt (ví dụ: "Câu nói rất chuẩn và tự nhiên!", "Dùng trợ từ rất chính xác!").
-4. CÂU TIẾNG NHẬT:
-   - replyJa: câu tiếng Nhật hoàn chỉnh.
-   - replyFurigana: câu tiếng Nhật có gắn thẻ HTML ruby cho TẤT CẢ các chữ Kanji (ví dụ: <ruby>日本語<rt>にほんご</rt></ruby>).
-
-Lịch sử trò chuyện trước đó:
-${conversationContext || '(Bắt đầu cuộc trò chuyện)'}
-
-Câu người học vừa nói: "${message}"
-
-Trả về định dạng JSON thuần túy (không bọc trong \`\`\`json):
-{
-  "replyJa": "câu tiếng Nhật chuẩn N4-N3 của AI kết thúc bằng 1 câu hỏi gợi mở",
-  "replyFurigana": "câu tiếng Nhật trên có thẻ <ruby>...<rt>...</rt></ruby> cho chữ Kanji",
-  "replyVi": "bản dịch tiếng Việt câu nói của AI",
-  "feedbackVi": "nhận xét sửa lỗi (nếu có lỗi: chỉ ra lỗi, câu đúng nên dùng và giải thích ngắn bằng tiếng Việt) hoặc khen ngợi nếu nói đúng"
-}`;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        temperature: 0.7,
-      },
-    });
-
-    const text = response.text || '{}';
     let data;
     try {
-      data = JSON.parse(text);
+      data = JSON.parse(rawText);
     } catch {
       data = {
-        replyJa: 'そうなんですね！最近、日本のアニメや音楽で好きなものはありますか。',
-        replyFurigana: 'そうなんですね！<ruby>最近<rt>さいきん</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>のアニメや<ruby>音楽<rt>おんがく</rt></ruby>で<ruby>好<rt>す</rt></ruby>きなものはありますか。',
-        replyVi: 'Ra là vậy! Gần đây bạn có thích anime hay bài hát tiếng Nhật nào không?',
+        replyJa: 'そうなんですね！もっとお話を聞かせてください。',
+        replyFurigana: 'そうなんですね！もっとお<ruby>話<rt>はなし</rt></ruby>を<ruby>聞<rt>き</rt></ruby>かせてください。',
+        replyVi: 'Ra là vậy! Hãy chia sẻ thêm cho tôi nhé.',
         feedbackVi: 'Bạn diễn đạt ý rất tốt, tiếp tục trò chuyện nhé!'
       };
+    }
+
+    // Ensure Furigana is properly formatted with ruby HTML tags
+    if (data.replyFurigana) {
+      data.replyFurigana = normalizeFuriganaRuby(data.replyFurigana);
+    } else if (data.replyJa) {
+      data.replyFurigana = data.replyJa;
     }
 
     res.json(data);
   } catch (error: any) {
     console.error('Gemini speaking chat error:', error);
-    res.status(500).json({
-      error: 'Speaking AI error',
-      details: error.message,
-      fallback: {
-        replyJa: 'よく分かりました！週末は何をして過ごす予定ですか。',
-        replyFurigana: 'よく<ruby>分<rt>わ</rt></ruby>かりました！<ruby>週末<rt>しゅうまつ</rt></ruby>は<ruby>何<rt>なに</rt></ruby>をして<ruby>過<rt>す</rt></ruby>ごす<ruby>予定<rt>よてい</rt></ruby>ですか。',
-        replyVi: 'Tôi hiểu rồi! Cuối tuần này bạn dự định làm gì để thư giãn thế?',
-        feedbackVi: 'Đã nhận được câu trả lời của bạn.'
-      }
+    res.json({
+      replyJa: 'よく分かりました！そのことについて、もう少し詳しく教えてくれますか。',
+      replyFurigana: 'よく<ruby>分<rt>わ</rt></ruby>かりました！そのことについて、もう少し<ruby>詳<rt>くわ</rt></ruby>しく<ruby>教<rt>おし</rt></ruby>えてくれますか。',
+      replyVi: 'Tôi hiểu rồi! Bạn có thể kể thêm cho tôi nghe về điều đó được không?',
+      feedbackVi: 'Đã nhận được câu trả lời của bạn.'
     });
   }
 });
