@@ -10,7 +10,9 @@ import {
   RotateCcw,
   BookOpen,
   FileCheck,
-  HelpCircle
+  HelpCircle,
+  Lock,
+  LogIn
 } from 'lucide-react';
 import { ExamMock } from '../types';
 import { ThemePreset } from '../utils/themePresets';
@@ -21,6 +23,8 @@ interface ExamSectionProps {
   isDarkMode: boolean;
   activePreset: ThemePreset;
   onAddGold: (amount: number) => void;
+  isGuestMode?: boolean;
+  onRequireLogin?: (feature: string) => void;
 }
 
 export const ExamSection: React.FC<ExamSectionProps> = ({
@@ -28,6 +32,8 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
   isDarkMode,
   activePreset,
   onAddGold,
+  isGuestMode = false,
+  onRequireLogin,
 }) => {
   const [currentExam, setCurrentExam] = useState<ExamMock>(exams[0]);
   const [secondsRemaining, setSecondsRemaining] = useState(currentExam.totalTimeMinutes * 60);
@@ -124,6 +130,37 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      {/* Guest Lock Banner */}
+      {isGuestMode && (
+        <div 
+          onClick={() => onRequireLogin && onRequireLogin('làm đề thi thử JLPT N3 chuẩn')}
+          className="p-6 rounded-3xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-center space-y-3 shadow-md cursor-pointer hover:border-amber-400 transition-all"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-amber-200 dark:bg-amber-900 text-amber-600 dark:text-amber-300 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6 animate-pulse" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-black text-gray-900 dark:text-gray-100">
+              Tính Năng Thi Thử JLPT N3 Yêu Cầu Đăng Nhập Google
+            </h3>
+            <p className="text-xs text-gray-500 max-w-md mx-auto">
+              Chế độ khách chỉ cho phép xem trước cấu trúc đề thi. Để làm bài trực tiếp có đồng hồ bấm giờ, nghe audio Choukai và nhận chứng nhận điểm số, vui lòng đăng nhập tài khoản Google.
+            </p>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRequireLogin && onRequireLogin('làm đề thi thử JLPT N3 chuẩn');
+            }}
+            className="px-6 py-2.5 rounded-xl font-black text-xs text-white shadow-md cursor-pointer inline-flex items-center gap-2"
+            style={{ backgroundColor: activePreset.primary }}
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Đăng Nhập Bằng Google Để Làm Đề</span>
+          </button>
+        </div>
+      )}
+
       {/* Top Banner with Exam Title and Floating Timer */}
       <div 
         className="p-5 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-16 z-20 shadow-md backdrop-blur-md"

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Download, 
   Upload, 
@@ -11,7 +12,9 @@ import {
   Check, 
   X,
   RefreshCw,
-  Info
+  Info,
+  Lock,
+  LogIn
 } from 'lucide-react';
 import { VocabularyItem, VocabPartOfSpeech } from '../types';
 import { ThemePreset } from '../utils/themePresets';
@@ -26,6 +29,8 @@ interface VocabSectionProps {
   isDarkMode: boolean;
   activePreset: ThemePreset;
   onAddGold: (amount: number) => void;
+  isGuestMode?: boolean;
+  onRequireLogin?: (feature: string) => void;
 }
 
 export const VocabSection: React.FC<VocabSectionProps> = ({
@@ -34,6 +39,8 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
   isDarkMode,
   activePreset,
   onAddGold,
+  isGuestMode = false,
+  onRequireLogin,
 }) => {
   const [activePos, setActivePos] = useState<VocabPartOfSpeech>('noun');
   const [searchQuery, setSearchQuery] = useState('');
@@ -336,6 +343,10 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
           <button
             id="btn-add-vocab-manual"
             onClick={() => {
+              if (isGuestMode && onRequireLogin) {
+                onRequireLogin('thêm từ vựng mới');
+                return;
+              }
               setIsEditing(null);
               setFormKanji('');
               setFormSinoVi('');
@@ -347,7 +358,7 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
               setFormSentenceVi('');
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 shadow-xs"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 shadow-xs cursor-pointer"
             style={{ backgroundColor: activePreset.primary }}
           >
             <Plus className="w-4 h-4" />
@@ -423,7 +434,7 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredVocab.map((item) => (
+          {(isGuestMode ? filteredVocab.slice(0, 4) : filteredVocab).map((item) => (
             <div
               key={item.id}
               id={`vocab-card-${item.id}`}
@@ -551,14 +562,50 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
               </div>
             </div>
           ))}
+
+          {/* Locked guest card */}
+          {isGuestMode && filteredVocab.length > 4 && (
+            <div 
+              onClick={() => onRequireLogin && onRequireLogin('toàn bộ kho hơn 1,000 từ vựng N3 Mimikara')}
+              className="p-8 rounded-3xl border-2 border-dashed flex flex-col items-center justify-center text-center space-y-3 cursor-pointer transition-all hover:scale-[1.01] hover:border-amber-400 group col-span-1 md:col-span-2 shadow-xs"
+              style={{
+                backgroundColor: isDarkMode ? '#222832' : '#FFFBEB',
+                borderColor: isDarkMode ? '#3B4758' : '#FDE68A',
+              }}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-500 flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+                <Lock className="w-6 h-6 animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-base font-black text-gray-900 dark:text-gray-100">
+                  Đã Khóa {filteredVocab.length - 4} Từ Vựng Còn Lại Trong Mục Này
+                </h4>
+                <p className="text-xs text-gray-500 max-w-md">
+                  Chế độ khách chỉ cho phép xem thử 4 từ vựng mẫu. Đăng nhập bằng tài khoản Google để mở khóa toàn bộ hơn 1,000 từ vựng N3 Mimikara, câu ví dụ đời sống thực tế và tính năng lưu học.
+                </p>
+              </div>
+              <span 
+                className="px-5 py-2.5 rounded-xl font-black text-xs text-white shadow-md flex items-center gap-1.5"
+                style={{ backgroundColor: activePreset.primary }}
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Đăng Nhập Google Để Mở Khóa Ngay</span>
+              </span>
+            </div>
+          )}
         </div>
       )}
 
       {/* Add / Edit Vocab Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      {isModalOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] overflow-y-auto bg-black/50 backdrop-blur-xs flex min-h-full items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsModalOpen(false);
+          }}
+        >
           <div 
-            className="w-full max-w-lg p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150"
+            className="w-full max-w-lg my-auto max-h-[90vh] overflow-y-auto p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150"
             style={{
               backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
               borderColor: isDarkMode ? '#374151' : '#E2E8F0',
@@ -768,7 +815,8 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

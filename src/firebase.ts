@@ -18,6 +18,14 @@ import {
   getDoc, 
   setDoc, 
   updateDoc, 
+  deleteDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  getDocs,
+  limit,
+  orderBy,
   serverTimestamp,
   getDocFromServer
 } from 'firebase/firestore';
@@ -59,6 +67,14 @@ export {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  getDocs,
+  limit,
+  orderBy,
   serverTimestamp
 };
 export type { FirebaseUser };

@@ -135,6 +135,7 @@ export interface UserProfile {
   gold: number;
   streakDays: number;
   lastStudyDate?: string;
+  lastLoginDate?: string;
   claimedStreakMilestones?: number[];
   unlockedShopItemIds?: string[];
   unlockedItems: string[];

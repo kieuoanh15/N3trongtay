@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Plus, 
   Search, 
@@ -9,7 +10,9 @@ import {
   Layers, 
   Check, 
   X,
-  BookOpen
+  BookOpen,
+  Lock,
+  LogIn
 } from 'lucide-react';
 import { GrammarItem } from '../types';
 import { ThemePreset } from '../utils/themePresets';
@@ -22,6 +25,8 @@ interface GrammarSectionProps {
   isDarkMode: boolean;
   activePreset: ThemePreset;
   onAddGold: (amount: number) => void;
+  isGuestMode?: boolean;
+  onRequireLogin?: (feature: string) => void;
 }
 
 export const GrammarSection: React.FC<GrammarSectionProps> = ({
@@ -30,6 +35,8 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
   isDarkMode,
   activePreset,
   onAddGold,
+  isGuestMode = false,
+  onRequireLogin,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
@@ -278,6 +285,12 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
           {/* PDF Upload Button */}
           <label
             id="btn-upload-grammar-pdf"
+            onClick={(e) => {
+              if (isGuestMode && onRequireLogin) {
+                e.preventDefault();
+                onRequireLogin('import file PDF ngữ pháp');
+              }
+            }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all hover:opacity-85 active:scale-95 shadow-2xs"
             style={{
               backgroundColor: isDarkMode ? '#28313E' : '#F8FAFC',
@@ -292,6 +305,7 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
               type="file"
               accept=".pdf, .txt"
               onChange={handlePdfUpload}
+              disabled={isGuestMode}
               className="hidden"
             />
           </label>
@@ -299,8 +313,14 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
           {/* Add Manual Grammar */}
           <button
             id="btn-add-grammar-manual"
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 shadow-xs"
+            onClick={() => {
+              if (isGuestMode && onRequireLogin) {
+                onRequireLogin('thêm mẫu câu ngữ pháp mới');
+                return;
+              }
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 shadow-xs cursor-pointer"
             style={{ backgroundColor: activePreset.primary }}
           >
             <Plus className="w-4 h-4" />
@@ -361,17 +381,24 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
 
           {/* List of Grammar Cards */}
           <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-            {filteredList.map((item) => {
+            {filteredList.map((item, idx) => {
+              const isLockedForGuest = isGuestMode && idx >= 3;
               const isSelected = selectedGrammar?.id === item.id;
               return (
                 <div
                   key={item.id}
-                  onClick={() => setSelectedGrammarId(item.id)}
+                  onClick={() => {
+                    if (isLockedForGuest && onRequireLogin) {
+                      onRequireLogin('toàn bộ các mẫu ngữ pháp N3');
+                      return;
+                    }
+                    setSelectedGrammarId(item.id);
+                  }}
                   className={`p-3.5 rounded-2xl border cursor-pointer transition-all duration-150 flex items-center justify-between ${
                     isSelected 
                       ? 'shadow-md ring-2 ring-offset-1' 
                       : 'hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
+                  } ${isLockedForGuest ? 'opacity-55' : ''}`}
                   style={{
                     backgroundColor: isSelected
                       ? (isDarkMode ? '#2A3442' : activePreset.light)
@@ -386,30 +413,51 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
                       <span className="text-sm font-black text-gray-900 dark:text-gray-50 tracking-wide">
                         <FuriganaText content={item.titleFurigana || item.title} />
                       </span>
-                      {item.isCustom && (
+                      {isLockedForGuest ? (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold flex items-center gap-1">
+                          <Lock className="w-2.5 h-2.5" /> Khóa
+                        </span>
+                      ) : item.isCustom ? (
                         <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-700 font-bold">
                           Đã thêm
                         </span>
-                      )}
+                      ) : null}
                     </div>
                     <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
                       {item.meaningVi}
                     </p>
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteGrammar(item.id);
-                    }}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 opacity-60 hover:opacity-100 transition-opacity"
-                    title="Xóa mẫu câu"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {!isLockedForGuest && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteGrammar(item.id);
+                      }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 opacity-60 hover:opacity-100 transition-opacity"
+                      title="Xóa mẫu câu"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               );
             })}
+
+            {isGuestMode && filteredList.length > 3 && (
+              <div 
+                onClick={() => onRequireLogin && onRequireLogin('toàn bộ các mẫu ngữ pháp N3')}
+                className="p-3.5 rounded-2xl border border-dashed border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-center cursor-pointer space-y-1.5 shadow-xs"
+              >
+                <div className="flex items-center justify-center gap-1.5 text-xs font-black text-amber-600 dark:text-amber-400">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Đã Khóa {filteredList.length - 3} Mẫu Câu Còn Lại</span>
+                </div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                  Chế độ khách chỉ xem thử 3 mẫu câu. Đăng nhập Google để xem toàn bộ công thức & ví dụ chi tiết.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -522,10 +570,15 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
       </div>
 
       {/* Add Manual Grammar Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      {isModalOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] overflow-y-auto bg-black/50 backdrop-blur-xs flex min-h-full items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsModalOpen(false);
+          }}
+        >
           <div 
-            className="w-full max-w-md p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150"
+            className="w-full max-w-md my-auto max-h-[90vh] overflow-y-auto p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150"
             style={{
               backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
               borderColor: isDarkMode ? '#374151' : '#E2E8F0',
@@ -672,14 +725,20 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* PDF Content Review & Import Modal */}
-      {isPdfModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      {isPdfModalOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] overflow-y-auto bg-black/50 backdrop-blur-xs flex min-h-full items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsPdfModalOpen(false);
+          }}
+        >
           <div 
-            className="w-full max-w-xl p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150"
+            className="w-full max-w-xl my-auto max-h-[90vh] overflow-y-auto p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150"
             style={{
               backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
               borderColor: isDarkMode ? '#374151' : '#E2E8F0',
@@ -731,7 +790,8 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

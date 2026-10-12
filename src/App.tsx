@@ -9,6 +9,7 @@ import {
   ExamMock 
 } from './types';
 import { THEME_PRESETS, ThemePreset } from './utils/themePresets';
+import { getLocalDateString, checkAndUpdateStreak } from './utils/streakManager';
 import { INITIAL_VOCABULARY } from './data/mimikaraVocab';
 import { INITIAL_GRAMMAR } from './data/mimikaraGrammar';
 import { INITIAL_KANJI } from './data/n3Kanji';
@@ -23,7 +24,9 @@ import {
   doc, 
   getDoc, 
   setDoc,
-  signOut 
+  signOut,
+  googleProvider,
+  signInWithPopup 
 } from './firebase';
 
 import { Header } from './components/Header';
@@ -40,21 +43,30 @@ import { GameRankSection } from './components/GameRankSection';
 import { ShopSection } from './components/ShopSection';
 import { SettingsSection } from './components/SettingsSection';
 import { AuthModal } from './components/AuthModal';
+import { GuestLockModal } from './components/GuestLockModal';
 
 import { 
   BookOpen, 
   Sparkles, 
   FileText, 
   Headphones, 
-  Menu 
+  Menu,
+  LogIn,
+  AlertTriangle 
 } from 'lucide-react';
 
 export default function App() {
   // Theme & Layout State
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return true;
+  });
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [activePreset, setActivePreset] = useState<ThemePreset>(THEME_PRESETS[0]);
   const [activeTab, setActiveTab] = useState<TabType>('vocab');
+  const [gameSubTab, setGameSubTab] = useState<'duel' | 'leaderboard' | 'streak' | 'minigame'>('duel');
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
 
   // Authentication State
@@ -62,24 +74,47 @@ export default function App() {
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [isGuestMode, setIsGuestMode] = useState<boolean>(false);
 
-  // User Profile State (Default template until loaded from Firebase/localStorage)
+  // Guest lock modal state
+  const [guestLockModalOpen, setGuestLockModalOpen] = useState<boolean>(false);
+  const [guestLockFeature, setGuestLockFeature] = useState<string>('tính năng này');
+
+  // User Profile State (Starts with streak = 1, increments day-by-day upon login)
   const [user, setUser] = useState<UserProfile>(() => {
+    const todayStr = getLocalDateString();
     const saved = localStorage.getItem('n3_user_profile');
     if (saved) {
-      try { return JSON.parse(saved); } catch {}
+      try {
+        const parsed = JSON.parse(saved);
+        const streakRes = checkAndUpdateStreak(parsed.streakDays, parsed.lastLoginDate);
+        return {
+          ...parsed,
+          streakDays: streakRes.streakDays,
+          lastLoginDate: streakRes.todayString,
+          gold: (typeof parsed.gold === 'number' ? parsed.gold : 50) + streakRes.awardedGold,
+        };
+      } catch {}
     }
     return {
       userId: 'N3-STUDENT',
       fullName: 'Học viên N3',
       email: '',
-      gold: 450,
-      streakDays: 5,
-      dayCount: 24, // Day 24 out of 90
+      gold: 50,
+      streakDays: 1, // Starts at 1
+      dayCount: 1,
+      lastLoginDate: todayStr,
       unlockedItems: ['avatar-tanuki', 'costume-school'],
       equippedAvatar: 'avatar-tanuki',
       equippedCostume: 'costume-school',
     };
   });
+
+  // Navigation helper for main tabs & game subtabs (e.g. Bảng Đua Top)
+  const handleNavigateTab = (tab: TabType, subTab?: 'duel' | 'leaderboard' | 'streak' | 'minigame') => {
+    setActiveTab(tab);
+    if (tab === 'game' && subTab) {
+      setGameSubTab(subTab);
+    }
+  };
 
   // 1. Firebase Auth State Listener & Google Account Data Synchronization
   useEffect(() => {
@@ -93,29 +128,51 @@ export default function App() {
 
           if (docSnap.exists()) {
             const data = docSnap.data();
+            const streakRes = checkAndUpdateStreak(
+              typeof data.streakDays === 'number' ? data.streakDays : 1,
+              data.lastLoginDate
+            );
+
+            const initialGold = typeof data.gold === 'number' ? data.gold : 50;
+            const updatedGold = initialGold + streakRes.awardedGold;
+            const updatedStreak = streakRes.streakDays;
+            const updatedLastLogin = streakRes.todayString;
+
             setUser(prev => ({
               ...prev,
               userId: fbUser.uid,
               email: fbUser.email || prev.email,
-              // "đặt tên người dùng theo tài khoản và có thể đổi tên"
               fullName: data.fullName || fbUser.displayName || (fbUser.email ? fbUser.email.split('@')[0] : prev.fullName),
-              gold: typeof data.gold === 'number' ? data.gold : prev.gold,
-              streakDays: typeof data.streakDays === 'number' ? data.streakDays : prev.streakDays,
+              gold: updatedGold,
+              streakDays: updatedStreak,
+              lastLoginDate: updatedLastLogin,
               dayCount: typeof data.dayCount === 'number' ? data.dayCount : prev.dayCount,
               equippedAvatar: data.equippedAvatar || prev.equippedAvatar,
               equippedCostume: data.equippedCostume || prev.equippedCostume,
               unlockedItems: Array.isArray(data.unlockedItems) ? data.unlockedItems : prev.unlockedItems,
             }));
+
+            // If day changed (new day login), save streak increment and login bonus to Firestore
+            if (streakRes.isNewDay) {
+              await setDoc(userDocRef, {
+                gold: updatedGold,
+                streakDays: updatedStreak,
+                lastLoginDate: updatedLastLogin,
+                updatedAt: new Date().toISOString(),
+              }, { merge: true });
+            }
           } else {
-            // First time login with Google: default name to Google Display Name
+            // First time login with Google: streak begins at 1
             const defaultName = fbUser.displayName || (fbUser.email ? fbUser.email.split('@')[0] : 'Học viên N3');
+            const todayStr = getLocalDateString();
             const newProfile: UserProfile = {
               userId: fbUser.uid,
               fullName: defaultName,
               email: fbUser.email || '',
-              gold: 450,
-              streakDays: 1,
+              gold: 50,
+              streakDays: 1, // Starts at 1 on first login
               dayCount: 1,
+              lastLoginDate: todayStr,
               unlockedItems: ['avatar-tanuki', 'costume-school'],
               equippedAvatar: 'avatar-tanuki',
               equippedCostume: 'costume-school',
@@ -252,6 +309,21 @@ export default function App() {
     setIsGuestMode(false);
   };
 
+  // Trigger Google Login
+  const handleLoginWithGoogle = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err: any) {
+      console.warn('Google sign-in error:', err);
+      setAuthModalOpen(true);
+    }
+  };
+
+  const handleRequireLogin = (featureName: string) => {
+    setGuestLockFeature(featureName);
+    setGuestLockModalOpen(true);
+  };
+
   // Loading Screen while Firebase checks authentication session
   if (isAuthLoading) {
     return (
@@ -280,9 +352,11 @@ export default function App() {
     );
   }
 
+  const isGuest = isGuestMode && !currentUser;
+
   return (
     <div 
-      className="min-h-screen flex flex-col font-sans transition-colors duration-200"
+      className="h-screen h-[100dvh] flex flex-col font-sans transition-colors duration-200 overflow-hidden"
       style={{
         backgroundColor: isDarkMode ? '#13171D' : '#F8FAFC',
         color: isDarkMode ? '#F8FAFC' : '#1E293B',
@@ -299,12 +373,41 @@ export default function App() {
         user={user}
         setUser={setUser}
         onOpenAuth={() => setAuthModalOpen(true)}
-        onNavigateTab={setActiveTab}
+        onNavigateTab={handleNavigateTab}
         onAddGold={handleAddGold}
       />
 
+      {/* Persistent Guest Mode Warning Banner ("khi đăng nhập gg mới học được, còn chế độ khách chỉ hiện giao diện và một vài tính năng chứ không được hiện hết") */}
+      {isGuest && (
+        <div 
+          className="border-b px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs transition-colors shrink-0"
+          style={{
+            backgroundColor: isDarkMode ? '#2D2314' : '#FEF3C7',
+            borderColor: '#F59E0B',
+            color: isDarkMode ? '#FDE68A' : '#92400E',
+          }}
+        >
+          <div className="flex items-center gap-2 text-xs font-bold">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500 text-white shrink-0 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" />
+              Chế Độ Dùng Thử (Khách)
+            </span>
+            <span>Chỉ xem giao diện mẫu và tính năng giới hạn. Đăng nhập Google để mở khóa toàn bộ lộ trình và thi đấu thách đấu 1v1.</span>
+          </div>
+
+          <button
+            onClick={handleLoginWithGoogle}
+            className="self-start sm:self-auto px-4 py-1.5 rounded-xl text-xs font-black text-white shadow-xs transition-transform active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
+            style={{ backgroundColor: activePreset.primary }}
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Đăng Nhập Google Ngay</span>
+          </button>
+        </div>
+      )}
+
       {/* Main Container with Collapsible Sidebar & Content Body */}
-      <div className="flex-1 flex min-w-0">
+      <div className="flex-1 flex min-w-0 overflow-hidden">
         {/* Collapsible Sidebar */}
         <Sidebar
           isOpen={sidebarOpen}
@@ -316,8 +419,8 @@ export default function App() {
           user={user}
         />
 
-        {/* Content Viewport with pb-20 on mobile for bottom navigation bar */}
-        <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 overflow-y-auto pb-20 lg:pb-8">
+        {/* Content Viewport with pb-24 on mobile for bottom navigation bar, stationary layout */}
+        <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 overflow-y-auto pb-24 md:pb-8">
           {activeTab === 'vocab' && (
             <VocabSection
               vocabulary={vocabulary}
@@ -325,6 +428,8 @@ export default function App() {
               isDarkMode={isDarkMode}
               activePreset={activePreset}
               onAddGold={handleAddGold}
+              isGuestMode={isGuest}
+              onRequireLogin={handleRequireLogin}
             />
           )}
 
@@ -335,6 +440,8 @@ export default function App() {
               isDarkMode={isDarkMode}
               activePreset={activePreset}
               onAddGold={handleAddGold}
+              isGuestMode={isGuest}
+              onRequireLogin={handleRequireLogin}
             />
           )}
 
@@ -371,6 +478,8 @@ export default function App() {
               isDarkMode={isDarkMode}
               activePreset={activePreset}
               onAddGold={handleAddGold}
+              isGuestMode={isGuest}
+              onRequireLogin={handleRequireLogin}
             />
           )}
 
@@ -379,6 +488,8 @@ export default function App() {
               isDarkMode={isDarkMode}
               activePreset={activePreset}
               onAddGold={handleAddGold}
+              isGuestMode={isGuest}
+              onRequireLogin={handleRequireLogin}
             />
           )}
 
@@ -387,9 +498,15 @@ export default function App() {
               vocabulary={vocabulary}
               user={user}
               setUser={setUser}
+              currentUser={currentUser}
+              isGuestMode={isGuest}
               isDarkMode={isDarkMode}
               activePreset={activePreset}
               onAddGold={handleAddGold}
+              onOpenAuth={() => setAuthModalOpen(true)}
+              activeSubTab={gameSubTab}
+              initialSubTab={gameSubTab}
+              onSubTabChange={setGameSubTab}
             />
           )}
 
@@ -421,7 +538,7 @@ export default function App() {
       {/* Mobile Bottom Navigation Bar (Optimized for Phones) */}
       <nav 
         id="mobile-bottom-nav"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-30 border-t flex items-center justify-around py-2 px-1 backdrop-blur-md shadow-lg"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t flex items-center justify-around py-2 px-1 backdrop-blur-md shadow-lg"
         style={{
           backgroundColor: isDarkMode ? '#1E232AE6' : '#FFFFFFE6',
           borderColor: isDarkMode ? '#2D3748' : '#E8EEF5',
@@ -446,12 +563,12 @@ export default function App() {
         </button>
 
         <button 
-          onClick={() => setActiveTab('reading')}
+          onClick={() => setActiveTab('game')}
           className="flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer"
-          style={{ color: activeTab === 'reading' ? activePreset.primary : (isDarkMode ? '#94A3B8' : '#64748B') }}
+          style={{ color: activeTab === 'game' ? activePreset.primary : (isDarkMode ? '#94A3B8' : '#64748B') }}
         >
-          <FileText className="w-5 h-5" />
-          <span>Đọc hiểu</span>
+          <Sparkles className="w-5 h-5 text-rose-500" />
+          <span>Thách đấu</span>
         </button>
 
         <button 
@@ -482,6 +599,16 @@ export default function App() {
         isDarkMode={isDarkMode}
         activePreset={activePreset}
         onSignOut={handleSignOut}
+      />
+
+      {/* Guest Lock Feature Modal */}
+      <GuestLockModal
+        isOpen={guestLockModalOpen}
+        onClose={() => setGuestLockModalOpen(false)}
+        onLoginWithGoogle={handleLoginWithGoogle}
+        featureName={guestLockFeature}
+        isDarkMode={isDarkMode}
+        activePreset={activePreset}
       />
     </div>
   );

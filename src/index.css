@@ -10,6 +10,15 @@
     --accent-gold: #E5A84B;
   }
 
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
     -webkit-font-smoothing: antialiased;

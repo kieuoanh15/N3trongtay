@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, 
   Mail, 
@@ -101,10 +102,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+  const modalContent = (
+    <div 
+      className="fixed inset-0 z-[9999] overflow-y-auto bg-black/60 backdrop-blur-xs flex min-h-full items-center justify-center p-4 animate-in fade-in duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div 
-        className="w-full max-w-md p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150 space-y-4 max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-md my-auto p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150 space-y-4 max-h-[90vh] overflow-y-auto"
         style={{
           backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
           borderColor: isDarkMode ? '#374151' : '#E2E8F0',
@@ -268,4 +274,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

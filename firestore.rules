@@ -10,14 +10,24 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // User private profile and study data
+    // 1. User private profile and study data (Protected Privacy)
     match /users/{userId} {
       allow read, write: if isOwner(userId);
 
-      // Subcollections under user (vocabulary, history, notes)
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId);
       }
+    }
+
+    // 2. Active Lobby for real players to see each other
+    match /lobby/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // 3. 1v1 Challenge Matches and Invitations
+    match /challenges/{challengeId} {
+      allow read, write: if isAuthenticated();
     }
 
     // Default deny all other paths

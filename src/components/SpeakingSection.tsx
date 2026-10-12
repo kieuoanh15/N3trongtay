@@ -9,7 +9,9 @@ import {
   User, 
   RefreshCw,
   MessageSquare,
-  Award
+  Award,
+  Lock,
+  LogIn
 } from 'lucide-react';
 import { ThemePreset } from '../utils/themePresets';
 import { playJapaneseAudio } from '../utils/speechHelper';
@@ -19,6 +21,8 @@ interface SpeakingSectionProps {
   isDarkMode: boolean;
   activePreset: ThemePreset;
   onAddGold: (amount: number) => void;
+  isGuestMode?: boolean;
+  onRequireLogin?: (feature: string) => void;
 }
 
 interface ChatMessage {
@@ -60,6 +64,8 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
   isDarkMode,
   activePreset,
   onAddGold,
+  isGuestMode = false,
+  onRequireLogin,
 }) => {
   const [selectedScenario, setSelectedScenario] = useState(SCENARIOS[0]);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -193,6 +199,37 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Guest Lock Banner */}
+      {isGuestMode && (
+        <div 
+          onClick={() => onRequireLogin && onRequireLogin('luyện phản xạ nói hội thoại AI')}
+          className="p-6 rounded-3xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-center space-y-3 shadow-md cursor-pointer hover:border-amber-400 transition-all"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-amber-200 dark:bg-amber-900 text-amber-600 dark:text-amber-300 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6 animate-pulse" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-black text-gray-900 dark:text-gray-100">
+              Luyện Hội Thoại Phản Xạ AI Yêu Cầu Đăng Nhập Google
+            </h3>
+            <p className="text-xs text-gray-500 max-w-md mx-auto">
+              Chế độ khách chỉ cho phép xem tình huống hội thoại mẫu. Để trò chuyện trực tiếp bằng giọng nói, nhận phản hồi sửa lỗi ngữ pháp và nhận thưởng Vàng, vui lòng đăng nhập tài khoản Google.
+            </p>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRequireLogin && onRequireLogin('luyện phản xạ nói hội thoại AI');
+            }}
+            className="px-6 py-2.5 rounded-xl font-black text-xs text-white shadow-md cursor-pointer inline-flex items-center gap-2"
+            style={{ backgroundColor: activePreset.primary }}
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Đăng Nhập Bằng Google Để Luyện Nói</span>
+          </button>
+        </div>
+      )}
+
       {/* Top Banner */}
       <div 
         className="p-5 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs"
