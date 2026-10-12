@@ -161,11 +161,11 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
         </div>
       )}
 
-      {/* Top Banner with Exam Title and Floating Timer */}
+      {/* Top Banner with Exam Title and Timer (relative in-flow to never obscure questions when scrolling) */}
       <div 
-        className="p-5 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-16 z-20 shadow-md backdrop-blur-md"
+        className="p-5 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 relative shadow-sm"
         style={{
-          backgroundColor: isDarkMode ? '#1E232AE8' : '#FFFFFFE8',
+          backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
           borderColor: isDarkMode ? '#2D3748' : '#E8EEF5',
         }}
       >
@@ -452,6 +452,78 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
             </div>
           );
         })}
+      </div>
+
+      {/* Warning Notice if user tries to submit without answering all questions (bottom) */}
+      {unansweredWarning && (
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2 animate-in shake duration-150">
+          <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
+          <span>{unansweredWarning}</span>
+        </div>
+      )}
+
+      {/* Bottom Exam Action Card (Submit / Time remaining / Reset) */}
+      <div 
+        id="exam-bottom-actions"
+        className="p-5 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+        style={{
+          backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
+          borderColor: isDarkMode ? '#2D3748' : '#E8EEF5',
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div 
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border font-mono text-base font-black shadow-inner"
+            style={{
+              backgroundColor: secondsRemaining < 300 
+                ? '#FEE2E2' 
+                : (isDarkMode ? '#2D3748' : '#F8FAFC'),
+              borderColor: secondsRemaining < 300 
+                ? '#EF4444' 
+                : (isDarkMode ? '#4A5568' : '#CBD5E1'),
+              color: secondsRemaining < 300 
+                ? '#DC2626' 
+                : (isDarkMode ? '#F8FAFC' : '#1E293B'),
+            }}
+          >
+            <Clock className={`w-4 h-4 ${secondsRemaining < 300 ? 'animate-bounce text-rose-500' : 'text-blue-500'}`} />
+            <span>{formatTime(secondsRemaining)}</span>
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-gray-700 dark:text-gray-300">
+              Đã làm: <span className="font-black text-blue-500">{answeredCount}/{totalQuestions} câu</span>
+            </p>
+            <p className="text-[11px] text-gray-400">
+              {isSubmitted 
+                ? `Đúng ${correctCount}/${totalQuestions} câu (${scorePercent}%)` 
+                : (answeredCount === totalQuestions ? 'Đã làm xong tất cả các câu! Hãy nhấn Nộp Bài.' : `Còn ${totalQuestions - answeredCount} câu chưa làm`)}
+            </p>
+          </div>
+        </div>
+
+        {!isSubmitted ? (
+          <button
+            onClick={handleSubmitExam}
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl text-xs font-black text-white transition-transform active:scale-95 shadow-md hover:opacity-90 cursor-pointer"
+            style={{ backgroundColor: activePreset.primary }}
+          >
+            Nộp Bài Thi
+          </button>
+        ) : (
+          <button
+            onClick={handleResetExam}
+            className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl text-xs font-bold border transition-all hover:opacity-80 cursor-pointer"
+            style={{
+              backgroundColor: isDarkMode ? '#2D3748' : '#FFFFFF',
+              borderColor: isDarkMode ? '#4A5568' : '#CBD5E1',
+              color: isDarkMode ? '#E2E8F0' : '#334155',
+            }}
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Làm Lại Đề Thi</span>
+          </button>
+        )}
       </div>
     </div>
   );

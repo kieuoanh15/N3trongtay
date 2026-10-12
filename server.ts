@@ -113,46 +113,49 @@ Yêu cầu trả về định dạng JSON thuần túy (không kèm markdown cod
   }
 });
 
-// 3. AI Speaking conversation practice
+// 3. AI Speaking conversation practice (Free-form Japanese conversation N4-N3)
 app.post('/api/gemini/speaking-chat', async (req, res) => {
   try {
-    const { topic, message, history } = req.body;
+    const { message, history } = req.body;
     const ai = getGeminiClient();
 
     if (!ai) {
       return res.json({
-        replyJa: `いいですね！${topic}についてもっと教えてください。`,
-        replyFurigana: `いいですね！${topic}についてもっと<ruby>教<rt>おし</rt></ruby>えてください。`,
-        replyVi: `Hay quá! Hãy kể cho tôi nghe thêm về ${topic} nhé.`,
-        feedbackVi: `Câu nói của bạn rất rõ ràng và dễ hiểu! Tiếp tục phát huy nhé.`
+        replyJa: 'こんにちは！今日はどんな一日でしたか。何か楽しいことがありましたか。',
+        replyFurigana: 'こんにちは！<ruby>今日<rt>きょう</rt></ruby>はどんな<ruby>一日<rt>いちにち</rt></ruby>でしたか。<ruby>何<rt>なに</rt></ruby>か<ruby>楽<rt>たの</rt></ruby>しいことがありましたか。',
+        replyVi: 'Xin chào! Hôm nay của bạn thế nào? Có chuyện gì vui không?',
+        feedbackVi: 'Câu của bạn diễn đạt tự nhiên và chuẩn ngữ pháp!'
       });
     }
 
     const conversationContext = (history || [])
-      .map((item: any) => `${item.role === 'user' ? 'Học viên' : 'Giáo viên AI'}: ${item.text}`)
+      .map((item: any) => `${item.role === 'user' ? 'Người học' : 'AI Bạn Nhật'}: ${item.content || item.text || ''}`)
       .join('\n');
 
-    const prompt = `Bạn là giáo viên tiếng Nhật bản xứ nhiệt tình, đang luyện giao tiếp phản xạ cấp độ JLPT N3 với học viên Việt Nam.
-Chủ đề hội thoại: "${topic || 'Giao tiếp hàng ngày N3'}".
+    const prompt = `Bạn là một người bạn Nhật Bản thân thiện và kiên nhẫn, đang trò chuyện tiếng Nhật tự do với một bạn học viên người Việt Nam.
+Trình độ tiếng Nhật sử dụng: N4 - N3 (dễ hiểu, tự nhiên, câu từ gãy gọn, dùng thể lịch sự desu/masu).
 
-Lịch sử hội thoại:
-${conversationContext}
+Nguyên tắc trò chuyện:
+1. Bạn là người CHỦ ĐỘNG bắt chuyện và duy trì cuộc trò chuyện. Phản hồi tự nhiên, gần gũi theo nội dung mà người học vừa nói.
+2. Mỗi lượt phản hồi, bạn CHỈ ĐẶT ĐÚNG 1 CÂU HỎI tiếp nối ở cuối câu để người học dễ dàng suy nghĩ và trả lời (không hỏi dồn dập nhiều câu).
+3. KIỂM TRA LỖI CỦA NGƯỜI HỌC:
+   - Nếu người học nói sai ngữ pháp, dùng từ chưa đúng hoặc diễn đạt chưa tự nhiên: Trong trường hợp này, ở phần "feedbackVi", hãy SỬA LẠI CÂU ĐÚNG, giải thích ngắn gọn, dễ hiểu bằng tiếng Việt tại sao nên nói như vậy.
+   - Nếu người học nói đúng và tốt: Ở phần "feedbackVi", hãy khen ngợi ngắn gọn bằng tiếng Việt (ví dụ: "Câu nói rất chuẩn và tự nhiên!", "Dùng trợ từ rất chính xác!").
+4. CÂU TIẾNG NHẬT:
+   - replyJa: câu tiếng Nhật hoàn chỉnh.
+   - replyFurigana: câu tiếng Nhật có gắn thẻ HTML ruby cho TẤT CẢ các chữ Kanji (ví dụ: <ruby>日本語<rt>にほんご</rt></ruby>).
 
-Học viên vừa nói: "${message}"
+Lịch sử trò chuyện trước đó:
+${conversationContext || '(Bắt đầu cuộc trò chuyện)'}
 
-Nhiệm vụ của bạn:
-1. Đáp lại câu của học viên một cách tự nhiên, thân thiện bằng tiếng Nhật cấp độ N3 (dùng kính ngữ lịch sự desu/masu hoặc thể lịch sự tiêu chuẩn).
-2. Câu trả lời tiếng Nhật PHẢI có thẻ <ruby>...<rt>...</rt></ruby> cho TẤT CẢ các chữ Kanji để người học đọc được Furigana.
-3. Cung cấp bản dịch tiếng Việt dễ hiểu.
-4. Đưa ra nhận xét/góp ý ngắn gọn bằng tiếng Việt giúp học viên cải thiện (ngữ pháp, từ vựng hoặc phát âm tự nhiên hơn).
-5. Đặt thêm 1 câu hỏi gợi mở để học viên tiếp tục phản xạ trả lời.
+Câu người học vừa nói: "${message}"
 
-Trả về JSON thuần túy (không code block):
+Trả về định dạng JSON thuần túy (không bọc trong \`\`\`json):
 {
-  "replyJa": "câu tiếng Nhật chuẩn",
-  "replyFurigana": "câu tiếng Nhật có đầy đủ thẻ ruby furigana",
-  "replyVi": "bản dịch tiếng Việt",
-  "feedbackVi": "nhận xét góp ý cho câu của học viên (nếu chuẩn thì khen ngợi, nếu có lỗi thì sửa nhẹ nhàng)"
+  "replyJa": "câu tiếng Nhật chuẩn N4-N3 của AI kết thúc bằng 1 câu hỏi gợi mở",
+  "replyFurigana": "câu tiếng Nhật trên có thẻ <ruby>...<rt>...</rt></ruby> cho chữ Kanji",
+  "replyVi": "bản dịch tiếng Việt câu nói của AI",
+  "feedbackVi": "nhận xét sửa lỗi (nếu có lỗi: chỉ ra lỗi, câu đúng nên dùng và giải thích ngắn bằng tiếng Việt) hoặc khen ngợi nếu nói đúng"
 }`;
 
     const response = await ai.models.generateContent({
@@ -170,10 +173,10 @@ Trả về JSON thuần túy (không code block):
       data = JSON.parse(text);
     } catch {
       data = {
-        replyJa: '分かりました。会話を続けましょう！',
-        replyFurigana: '<ruby>分<rt>わ</rt></ruby>かりました。<ruby>会話<rt>かいわ</rt></ruby>を<ruby>続<rt>つづ</rt></ruby>けましょう！',
-        replyVi: 'Tôi hiểu rồi. Chúng ta hãy tiếp tục cuộc trò chuyện nhé!',
-        feedbackVi: 'Bạn phát âm rất tốt, hãy tiếp tục đặt câu tiếp theo nào!'
+        replyJa: 'そうなんですね！最近、日本のアニメや音楽で好きなものはありますか。',
+        replyFurigana: 'そうなんですね！<ruby>最近<rt>さいきん</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>のアニメや<ruby>音楽<rt>おんがく</rt></ruby>で<ruby>好<rt>す</rt></ruby>きなものはありますか。',
+        replyVi: 'Ra là vậy! Gần đây bạn có thích anime hay bài hát tiếng Nhật nào không?',
+        feedbackVi: 'Bạn diễn đạt ý rất tốt, tiếp tục trò chuyện nhé!'
       };
     }
 
@@ -184,10 +187,10 @@ Trả về JSON thuần túy (không code block):
       error: 'Speaking AI error',
       details: error.message,
       fallback: {
-        replyJa: 'とても上手ですね！次の質問に答えてみてください。',
-        replyFurigana: 'とても<ruby>上手<rt>じょうず</rt></ruby>ですね！<ruby>次<rt>つぎ</rt></ruby>の<ruby>質問<rt>しつもん</rt></ruby>に<ruby>答<rt>こた</rt></ruby>えてみてください。',
-        replyVi: 'Bạn nói rất tốt! Hãy thử trả lời câu tiếp theo nhé.',
-        feedbackVi: 'Đã nhận diện câu nói của bạn thành công.'
+        replyJa: 'よく分かりました！週末は何をして過ごす予定ですか。',
+        replyFurigana: 'よく<ruby>分<rt>わ</rt></ruby>かりました！<ruby>週末<rt>しゅうまつ</rt></ruby>は<ruby>何<rt>なに</rt></ruby>をして<ruby>過<rt>す</rt></ruby>ごす<ruby>予定<rt>よてい</rt></ruby>ですか。',
+        replyVi: 'Tôi hiểu rồi! Cuối tuần này bạn dự định làm gì để thư giãn thế?',
+        feedbackVi: 'Đã nhận được câu trả lời của bạn.'
       }
     });
   }
