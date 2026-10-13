@@ -87,7 +87,7 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
     clearCanvas();
   }, [selectedKanjiIndex, isDarkMode]);
 
-  // Touch / Mouse Drawing Handlers
+  // Touch / Mouse Drawing Handlers with responsive scale normalization
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -95,8 +95,11 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const scaleX = canvas.width / (rect.width || 1);
+    const scaleY = canvas.height / (rect.height || 1);
+
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
 
     isDrawingRef.current = true;
     lastPointRef.current = { x, y };
@@ -113,8 +116,11 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const scaleX = canvas.width / (rect.width || 1);
+    const scaleY = canvas.height / (rect.height || 1);
+
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
 
     ctx.strokeStyle = isDarkMode ? '#FFFFFF' : '#1E293B';
     ctx.lineWidth = 8;
@@ -231,14 +237,14 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
         {/* Left: Canvas & Drawing Controls */}
         <div className="md:col-span-6 flex flex-col items-center space-y-4">
           {/* Canvas Box */}
-          <div className="relative rounded-3xl overflow-hidden shadow-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+          <div className="relative rounded-3xl overflow-hidden shadow-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 w-full max-w-[270px] xs:max-w-[320px] aspect-square flex items-center justify-center">
             {/* Guide SVG Overlay with Stroke Numbers */}
             {showGuide && (
               <div 
                 className="absolute inset-0 pointer-events-none flex items-center justify-center select-none"
                 style={{ opacity: isDarkMode ? 0.25 : 0.2 }}
               >
-                <span className="text-[180px] font-serif font-black text-gray-500 leading-none">
+                <span className="text-[140px] xs:text-[180px] font-serif font-black text-gray-500 leading-none">
                   {currentKanji.kanji}
                 </span>
               </div>
@@ -280,7 +286,7 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
               onTouchStart={startDrawing}
               onTouchMove={draw}
               onTouchEnd={stopDrawing}
-              className="cursor-crosshair touch-none"
+              className="cursor-crosshair touch-none w-full h-full aspect-square"
             />
           </div>
 
@@ -306,10 +312,10 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
           </div>
 
           {/* Action Buttons below Canvas */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 w-full max-w-xs">
             <button
               onClick={() => setShowGuide(!showGuide)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all hover:opacity-80"
+              className="flex-1 min-w-[85px] flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] sm:text-xs font-bold border transition-all hover:opacity-80 active:scale-95"
               style={{
                 backgroundColor: isDarkMode ? '#2D3748' : '#FFFFFF',
                 borderColor: isDarkMode ? '#4A5568' : '#CBD5E1',
@@ -322,7 +328,7 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
 
             <button
               onClick={clearCanvas}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all hover:opacity-80"
+              className="flex-1 min-w-[85px] flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] sm:text-xs font-bold border transition-all hover:opacity-80 active:scale-95"
               style={{
                 backgroundColor: isDarkMode ? '#2D3748' : '#FFFFFF',
                 borderColor: isDarkMode ? '#4A5568' : '#CBD5E1',
@@ -335,7 +341,7 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
 
             <button
               onClick={handleScoreDrawing}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-transform active:scale-95 shadow-xs"
+              className="w-full sm:w-auto flex-1 min-w-[120px] flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-bold text-white transition-transform active:scale-95 shadow-xs"
               style={{ backgroundColor: activePreset.primary }}
             >
               <Check className="w-4 h-4" />
@@ -346,7 +352,7 @@ export const KanjiSection: React.FC<KanjiSectionProps> = ({
 
         {/* Right: Kanji Details & Vocabulary Examples */}
         <div 
-          className="md:col-span-6 p-6 rounded-3xl border shadow-sm space-y-4"
+          className="md:col-span-6 p-4 sm:p-6 rounded-3xl border shadow-sm space-y-4"
           style={{
             backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
             borderColor: isDarkMode ? '#2D3748' : '#E8EEF5',

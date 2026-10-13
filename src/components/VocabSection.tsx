@@ -301,12 +301,12 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
           </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* Download Excel Template */}
           <button
             id="btn-download-excel-template"
             onClick={downloadExcelTemplate}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all hover:opacity-85 active:scale-95 shadow-2xs"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all hover:opacity-85 active:scale-95 shadow-2xs"
             style={{
               backgroundColor: isDarkMode ? '#28313E' : '#F8FAFC',
               borderColor: isDarkMode ? '#3A4759' : '#CBD5E1',
@@ -321,7 +321,7 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
           {/* Upload Excel Button */}
           <label
             id="btn-upload-excel"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all hover:opacity-85 active:scale-95 shadow-2xs"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all hover:opacity-85 active:scale-95 shadow-2xs"
             style={{
               backgroundColor: isDarkMode ? '#28313E' : '#F8FAFC',
               borderColor: isDarkMode ? '#3A4759' : '#CBD5E1',
@@ -358,7 +358,7 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
               setFormSentenceVi('');
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 shadow-xs cursor-pointer"
+            className="w-full sm:w-auto justify-center flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 shadow-xs cursor-pointer"
             style={{ backgroundColor: activePreset.primary }}
           >
             <Plus className="w-4 h-4" />
@@ -370,7 +370,7 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
       {/* 4 Part of Speech Menu Tabs (Danh từ, Tính từ đuôi i, Tính từ đuôi na, Động từ) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div 
-          className="p-1 rounded-2xl border flex flex-wrap gap-1"
+          className="p-1 rounded-2xl border flex flex-wrap gap-1 w-full sm:w-auto"
           style={{
             backgroundColor: isDarkMode ? '#1E232A' : '#F1F5F9',
             borderColor: isDarkMode ? '#2D3748' : '#E2E8F0',
@@ -383,7 +383,7 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
                 key={tab.id}
                 id={`tab-pos-${tab.id}`}
                 onClick={() => setActivePos(tab.id as VocabPartOfSpeech)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs"
+                className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-xs flex-1 min-w-[calc(50%-4px)] sm:min-w-0 sm:flex-initial"
                 style={{
                   backgroundColor: isCurrent ? activePreset.primary : (isDarkMode ? '#242C37' : '#FFFFFF'),
                   color: isCurrent ? '#FFFFFF' : (isDarkMode ? '#E2E8F0' : '#1E293B'),
@@ -605,7 +605,7 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
           }}
         >
           <div 
-            className="w-full max-w-lg my-auto max-h-[90vh] overflow-y-auto p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150"
+            className="w-full max-w-lg my-auto max-h-[88dvh] overflow-y-auto p-4 sm:p-6 rounded-3xl shadow-2xl border animate-in zoom-in-95 duration-150"
             style={{
               backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
               borderColor: isDarkMode ? '#374151' : '#E2E8F0',
@@ -618,14 +618,14 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSaveVocab} className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Kanji */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
@@ -666,7 +666,7 @@ export const VocabSection: React.FC<VocabSectionProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Hiragana */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">

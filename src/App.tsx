@@ -61,13 +61,24 @@ export default function App() {
     if (typeof window !== 'undefined') {
       return window.innerWidth >= 768;
     }
-    return true;
+    return false;
   });
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [activePreset, setActivePreset] = useState<ThemePreset>(THEME_PRESETS[0]);
   const [activeTab, setActiveTab] = useState<TabType>('vocab');
   const [gameSubTab, setGameSubTab] = useState<'duel' | 'leaderboard' | 'streak' | 'minigame'>('duel');
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
+
+  // Auto-close sidebar on mobile resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
@@ -419,8 +430,8 @@ export default function App() {
           user={user}
         />
 
-        {/* Content Viewport with pb-24 on mobile for bottom navigation bar, stationary layout */}
-        <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 overflow-y-auto pb-24 md:pb-8">
+        {/* Content Viewport with pb-28 on mobile for bottom navigation bar, stationary layout */}
+        <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 overflow-y-auto pb-28 md:pb-8 max-w-full overflow-x-hidden">
           {activeTab === 'vocab' && (
             <VocabSection
               vocabulary={vocabulary}
@@ -535,10 +546,10 @@ export default function App() {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation Bar (Optimized for Phones) */}
+      {/* Mobile Bottom Navigation Bar (Optimized for Phones 320px - 480px) */}
       <nav 
         id="mobile-bottom-nav"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t flex items-center justify-around py-2 px-1 backdrop-blur-md shadow-lg"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t flex items-center justify-around py-1.5 px-0.5 backdrop-blur-md shadow-lg pb-[calc(0.375rem+env(safe-area-inset-bottom,0px))]"
         style={{
           backgroundColor: isDarkMode ? '#1E232AE6' : '#FFFFFFE6',
           borderColor: isDarkMode ? '#2D3748' : '#E8EEF5',
@@ -546,47 +557,47 @@ export default function App() {
       >
         <button 
           onClick={() => setActiveTab('vocab')}
-          className="flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer"
+          className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer active:scale-95"
           style={{ color: activeTab === 'vocab' ? activePreset.primary : (isDarkMode ? '#94A3B8' : '#64748B') }}
         >
-          <BookOpen className="w-5 h-5" />
-          <span>Từ vựng</span>
+          <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+          <span className="truncate max-w-full">Từ vựng</span>
         </button>
 
         <button 
           onClick={() => setActiveTab('flashcard')}
-          className="flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer"
+          className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer active:scale-95"
           style={{ color: activeTab === 'flashcard' ? activePreset.primary : (isDarkMode ? '#94A3B8' : '#64748B') }}
         >
-          <Sparkles className="w-5 h-5" />
-          <span>Flashcard</span>
+          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+          <span className="truncate max-w-full">Flashcard</span>
         </button>
 
         <button 
           onClick={() => setActiveTab('game')}
-          className="flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer"
+          className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer active:scale-95"
           style={{ color: activeTab === 'game' ? activePreset.primary : (isDarkMode ? '#94A3B8' : '#64748B') }}
         >
-          <Sparkles className="w-5 h-5 text-rose-500" />
-          <span>Thách đấu</span>
+          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500 shrink-0" />
+          <span className="truncate max-w-full">Thách đấu</span>
         </button>
 
         <button 
           onClick={() => setActiveTab('exam')}
-          className="flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer"
+          className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer active:scale-95"
           style={{ color: activeTab === 'exam' ? activePreset.primary : (isDarkMode ? '#94A3B8' : '#64748B') }}
         >
-          <Headphones className="w-5 h-5" />
-          <span>Thi thử</span>
+          <Headphones className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+          <span className="truncate max-w-full">Thi thử</span>
         </button>
 
         <button 
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer"
+          className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer active:scale-95"
           style={{ color: sidebarOpen ? activePreset.primary : (isDarkMode ? '#94A3B8' : '#64748B') }}
         >
-          <Menu className="w-5 h-5" />
-          <span>Menu</span>
+          <Menu className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+          <span className="truncate max-w-full">Menu</span>
         </button>
       </nav>
 

@@ -163,7 +163,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
 
       {/* Top Banner with Exam Title and Timer (relative in-flow to never obscure questions when scrolling) */}
       <div 
-        className="p-5 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 relative shadow-sm"
+        className="p-4 sm:p-5 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative shadow-sm"
         style={{
           backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
           borderColor: isDarkMode ? '#2D3748' : '#E8EEF5',
@@ -179,7 +179,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
             </span>
             <span className="text-xs text-gray-500 font-semibold">{currentExam.year}</span>
           </div>
-          <h2 className="text-lg font-black text-gray-900 dark:text-gray-100">
+          <h2 className="text-base sm:text-lg font-black text-gray-900 dark:text-gray-100">
             {currentExam.title}
           </h2>
           <p className="text-xs text-gray-400">
@@ -188,10 +188,10 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
         </div>
 
         {/* Real-time Countdown Timer & Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div 
             id="exam-timer"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border font-mono text-base font-black shadow-inner"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border font-mono text-sm sm:text-base font-black shadow-inner"
             style={{
               backgroundColor: secondsRemaining < 300 
                 ? '#FEE2E2' 
@@ -204,7 +204,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
                 : (isDarkMode ? '#F8FAFC' : '#1E293B'),
             }}
           >
-            <Clock className={`w-4 h-4 ${secondsRemaining < 300 ? 'animate-bounce text-rose-500' : 'text-blue-500'}`} />
+            <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${secondsRemaining < 300 ? 'animate-bounce text-rose-500' : 'text-blue-500'}`} />
             <span>{formatTime(secondsRemaining)}</span>
           </div>
 
@@ -212,7 +212,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
             <button
               id="btn-submit-exam"
               onClick={handleSubmitExam}
-              className="px-5 py-2.5 rounded-2xl text-xs font-black text-white transition-transform active:scale-95 shadow-sm hover:opacity-90"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-black text-white transition-transform active:scale-95 shadow-sm hover:opacity-90"
               style={{ backgroundColor: activePreset.primary }}
             >
               Nộp Bài Thi
@@ -220,7 +220,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
           ) : (
             <button
               onClick={handleResetExam}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold border transition-all hover:opacity-80"
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-2xl text-xs font-bold border transition-all hover:opacity-80"
               style={{
                 backgroundColor: isDarkMode ? '#2D3748' : '#FFFFFF',
                 borderColor: isDarkMode ? '#4A5568' : '#CBD5E1',
@@ -465,15 +465,15 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
       {/* Bottom Exam Action Card (Submit / Time remaining / Reset) */}
       <div 
         id="exam-bottom-actions"
-        className="p-5 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+        className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-sm"
         style={{
           backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
           borderColor: isDarkMode ? '#2D3748' : '#E8EEF5',
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div 
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border font-mono text-base font-black shadow-inner"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border font-mono text-sm sm:text-base font-black shadow-inner"
             style={{
               backgroundColor: secondsRemaining < 300 
                 ? '#FEE2E2' 
@@ -486,7 +486,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
                 : (isDarkMode ? '#F8FAFC' : '#1E293B'),
             }}
           >
-            <Clock className={`w-4 h-4 ${secondsRemaining < 300 ? 'animate-bounce text-rose-500' : 'text-blue-500'}`} />
+            <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${secondsRemaining < 300 ? 'animate-bounce text-rose-500' : 'text-blue-500'}`} />
             <span>{formatTime(secondsRemaining)}</span>
           </div>
 
@@ -494,7 +494,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">
               Đã làm: <span className="font-black text-blue-500">{answeredCount}/{totalQuestions} câu</span>
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[10px] sm:text-[11px] text-gray-400">
               {isSubmitted 
                 ? `Đúng ${correctCount}/${totalQuestions} câu (${scorePercent}%)` 
                 : (answeredCount === totalQuestions ? 'Đã làm xong tất cả các câu! Hãy nhấn Nộp Bài.' : `Còn ${totalQuestions - answeredCount} câu chưa làm`)}
@@ -505,7 +505,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
         {!isSubmitted ? (
           <button
             onClick={handleSubmitExam}
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl text-xs font-black text-white transition-transform active:scale-95 shadow-md hover:opacity-90 cursor-pointer"
+            className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-black text-white transition-transform active:scale-95 shadow-md hover:opacity-90 cursor-pointer text-center"
             style={{ backgroundColor: activePreset.primary }}
           >
             Nộp Bài Thi
@@ -513,7 +513,7 @@ export const ExamSection: React.FC<ExamSectionProps> = ({
         ) : (
           <button
             onClick={handleResetExam}
-            className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl text-xs font-bold border transition-all hover:opacity-80 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold border transition-all hover:opacity-80 cursor-pointer text-center"
             style={{
               backgroundColor: isDarkMode ? '#2D3748' : '#FFFFFF',
               borderColor: isDarkMode ? '#4A5568' : '#CBD5E1',

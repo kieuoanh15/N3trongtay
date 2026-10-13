@@ -711,62 +711,62 @@ export const MultiplayerDuelSection: React.FC<MultiplayerDuelSectionProps> = ({
       <div className="max-w-3xl mx-auto space-y-6 animate-in zoom-in-95 duration-200">
         {/* Match Header Bar: You vs Opponent Real-time Scores */}
         <div 
-          className="p-5 rounded-3xl border shadow-md flex items-center justify-between"
+          className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border shadow-md flex items-center justify-between"
           style={{
             backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
             borderColor: isDarkMode ? '#2D3748' : '#E2E8F0',
           }}
         >
           {/* Player Left: You */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
             <div 
-              className="w-12 h-12 rounded-2xl flex items-center justify-center p-1.5 shadow-sm border"
+              className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center p-1 shadow-sm border shrink-0"
               style={{ backgroundColor: activePreset.badgeBg, borderColor: activePreset.primary }}
             >
-              <ItemGraphic itemId={user.equippedAvatar || 'avatar-tanuki'} className="w-9 h-9" />
+              <ItemGraphic itemId={user.equippedAvatar || 'avatar-tanuki'} className="w-6 h-6 sm:w-9 sm:h-9" />
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-gray-400 block uppercase">Bạn</span>
-              <h4 className="text-sm font-black text-gray-900 dark:text-gray-100 max-w-[120px] truncate">
+            <div className="min-w-0">
+              <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 block uppercase">Bạn</span>
+              <h4 className="text-xs sm:text-sm font-black text-gray-900 dark:text-gray-100 max-w-[70px] sm:max-w-[120px] truncate">
                 {user.fullName}
               </h4>
-              <span className="text-base font-black text-emerald-500">{myScore} điểm</span>
+              <span className="text-xs sm:text-base font-black text-emerald-500">{myScore} điểm</span>
             </div>
           </div>
 
           {/* Center VS Indicator & Timer */}
-          <div className="text-center px-3">
+          <div className="text-center px-1.5 sm:px-3 shrink-0">
             {activeChallenge.roomCode && (
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 block mb-1 font-mono">
-                Phòng #{activeChallenge.roomCode}
+              <span className="text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 block mb-0.5 sm:mb-1 font-mono">
+                #{activeChallenge.roomCode}
               </span>
             )}
-            <div className="flex items-center justify-center gap-1.5 text-xs font-black text-amber-500 mb-1">
-              <Clock className="w-4 h-4 animate-spin" />
+            <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs font-black text-amber-500 mb-0.5 sm:mb-1">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
               <span>{timerSeconds}s</span>
             </div>
-            <div className="px-3 py-1 rounded-full text-xs font-black bg-rose-500 text-white tracking-widest shadow-xs">
+            <div className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-black bg-rose-500 text-white tracking-widest shadow-xs">
               VS
             </div>
-            <span className="text-[10px] text-gray-400 block mt-1 font-bold">
-              Câu {round + 1} / {activeChallenge.questions.length}
+            <span className="text-[9px] sm:text-[10px] text-gray-400 block mt-0.5 sm:mt-1 font-bold">
+              Câu {round + 1}/{activeChallenge.questions.length}
             </span>
           </div>
 
           {/* Player Right: Opponent */}
-          <div className="flex items-center gap-3 text-right flex-row-reverse">
+          <div className="flex items-center gap-1.5 sm:gap-3 text-right flex-row-reverse min-w-0">
             <div 
-              className="w-12 h-12 rounded-2xl flex items-center justify-center p-1.5 shadow-sm border"
+              className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center p-1 shadow-sm border shrink-0"
               style={{ backgroundColor: '#FEE2E2', borderColor: '#EF4444' }}
             >
-              <ItemGraphic itemId={opponentAvatar || 'avatar-ninja'} className="w-9 h-9" />
+              <ItemGraphic itemId={opponentAvatar || 'avatar-ninja'} className="w-6 h-6 sm:w-9 sm:h-9" />
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-rose-500 block uppercase">Đối Thủ</span>
-              <h4 className="text-sm font-black text-gray-900 dark:text-gray-100 max-w-[120px] truncate">
+            <div className="min-w-0">
+              <span className="text-[9px] sm:text-[10px] font-bold text-rose-500 block uppercase">Đối Thủ</span>
+              <h4 className="text-xs sm:text-sm font-black text-gray-900 dark:text-gray-100 max-w-[70px] sm:max-w-[120px] truncate">
                 {opponentName}
               </h4>
-              <span className="text-base font-black text-rose-500">{opponentScore} điểm</span>
+              <span className="text-xs sm:text-base font-black text-rose-500">{opponentScore} điểm</span>
             </div>
           </div>
         </div>
@@ -1020,7 +1020,7 @@ export const MultiplayerDuelSection: React.FC<MultiplayerDuelSectionProps> = ({
 
           <form onSubmit={handleCreateRoomWithCode} className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-0">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-mono font-bold text-sm">
                   #
                 </span>

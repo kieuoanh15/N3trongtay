@@ -298,7 +298,7 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
 
       {/* Chat Messages Box */}
       <div 
-        className="p-4 sm:p-6 rounded-3xl border min-h-[420px] max-h-[500px] overflow-y-auto space-y-4 shadow-inner"
+        className="p-3 sm:p-6 rounded-3xl border min-h-[350px] max-h-[55vh] sm:max-h-[500px] overflow-y-auto space-y-3 sm:space-y-4 shadow-inner"
         style={{
           backgroundColor: isDarkMode ? '#171B21' : '#F9FBFC',
           borderColor: isDarkMode ? '#28313E' : '#E8EEF5',
@@ -309,21 +309,21 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
           return (
             <div
               key={idx}
-              className={`flex items-start gap-3 ${isAi ? '' : 'flex-row-reverse'}`}
+              className={`flex items-start gap-2.5 sm:gap-3 ${isAi ? '' : 'flex-row-reverse'}`}
             >
               {/* Avatar Icon */}
               <div 
-                className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-sm text-sm ${
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-sm text-sm ${
                   isAi ? 'text-white' : 'bg-gray-800 text-white'
                 }`}
                 style={{ backgroundColor: isAi ? activePreset.primary : undefined }}
               >
-                {isAi ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                {isAi ? <Bot className="w-4 h-4 sm:w-5 sm:h-5" /> : <User className="w-4 h-4 sm:w-5 sm:h-5" />}
               </div>
 
               {/* Message Bubble */}
               <div 
-                className={`max-w-[85%] p-4 rounded-3xl space-y-2 text-sm shadow-xs ${
+                className={`max-w-[88%] sm:max-w-[85%] p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl space-y-2 text-xs sm:text-sm shadow-xs ${
                   isAi 
                     ? 'rounded-tl-xs' 
                     : 'rounded-tr-xs text-white'
@@ -342,7 +342,7 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
                 }}
               >
                 {/* Japanese text with Furigana */}
-                <div className="font-bold leading-loose text-sm sm:text-base">
+                <div className="font-bold leading-loose text-xs sm:text-base">
                   {isAi && m.contentFurigana ? (
                     <FuriganaText content={m.contentFurigana} />
                   ) : (
@@ -355,7 +355,7 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
                   <div className="pt-1.5 border-t border-gray-100 dark:border-gray-800 space-y-1">
                     {m.contentVi && (
                       <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                        <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 italic">
                           → {m.contentVi}
                         </p>
                         <button
@@ -363,14 +363,14 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
                           className="p-1 rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
                           title="Nghe phát âm của AI"
                         >
-                          <Volume2 className="w-4 h-4" />
+                          <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     )}
 
                     {/* AI Feedback & Correction if available */}
                     {m.feedbackVi && (
-                      <div className="mt-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-[11px] font-medium flex items-start gap-2">
+                      <div className="mt-2 p-2 sm:p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-[10px] sm:text-[11px] font-medium flex items-start gap-1.5 sm:gap-2">
                         <Award className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">{m.feedbackVi}</span>
                       </div>
@@ -383,15 +383,15 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
         })}
 
         {isLoading && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <div 
-              className="w-9 h-9 rounded-2xl flex items-center justify-center text-white text-sm"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl flex items-center justify-center text-white text-sm"
               style={{ backgroundColor: activePreset.primary }}
             >
-              <Bot className="w-5 h-5 animate-spin" />
+              <Bot className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
             </div>
             <div 
-              className="px-4 py-3 rounded-2xl rounded-tl-xs border text-xs font-semibold flex items-center gap-2"
+              className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl rounded-tl-xs border text-xs font-semibold flex items-center gap-2"
               style={{
                 backgroundColor: isDarkMode ? '#222A36' : '#FFFFFF',
                 borderColor: isDarkMode ? '#313C4D' : '#E2E8F0',
@@ -408,11 +408,11 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
       </div>
 
       {/* Input Field & Speech Microphone */}
-      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+      <form onSubmit={handleSendMessage} className="flex items-center gap-1.5 sm:gap-2">
         <button
           type="button"
           onClick={toggleListening}
-          className={`p-3.5 rounded-2xl border transition-all active:scale-95 shadow-xs shrink-0 cursor-pointer ${
+          className={`p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border transition-all active:scale-95 shadow-xs shrink-0 cursor-pointer ${
             isListening ? 'bg-rose-500 text-white animate-pulse' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
           }`}
           style={{
@@ -421,16 +421,16 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
           }}
           title={isListening ? 'Đang lắng nghe tiếng Nhật... bấm để dừng' : 'Bật Micro nói tiếng Nhật'}
         >
-          <Mic className="w-5 h-5" />
+          <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         <input
           type="text"
-          placeholder="Nhập câu trả lời bằng tiếng Nhật hoặc bấm Micro để nói..."
+          placeholder="Nhập hoặc nói tiếng Nhật..."
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
           disabled={isLoading}
-          className="flex-1 px-4 py-3.5 rounded-2xl text-xs sm:text-sm border outline-none font-medium shadow-xs"
+          className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm border outline-none font-medium shadow-xs"
           style={{
             backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
             borderColor: isDarkMode ? '#2D3748' : '#CBD5E1',
@@ -441,11 +441,11 @@ export const SpeakingSection: React.FC<SpeakingSectionProps> = ({
         <button
           type="submit"
           disabled={isLoading || !inputVal.trim()}
-          className="p-3.5 rounded-2xl text-white transition-all active:scale-95 shadow-sm disabled:opacity-50 shrink-0 cursor-pointer"
+          className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl text-white transition-all active:scale-95 shadow-sm disabled:opacity-50 shrink-0 cursor-pointer"
           style={{ backgroundColor: activePreset.primary }}
           title="Gửi câu trả lời"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </form>
     </div>

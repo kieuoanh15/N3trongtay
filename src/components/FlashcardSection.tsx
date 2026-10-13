@@ -173,7 +173,7 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
         >
           {/* FRONT FACE (BỎ HÌNH ẢNH THEO YÊU CẦU, TẬP TRUNG CHỮ & ÂM HÁN) */}
           <div 
-            className="absolute inset-0 w-full h-full rounded-3xl p-8 border shadow-lg flex flex-col justify-between backface-hidden"
+            className="absolute inset-0 w-full h-full rounded-3xl p-4 sm:p-8 border shadow-lg flex flex-col justify-between backface-hidden"
             style={{
               backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
               borderColor: isDarkMode ? '#2D3748' : '#EAEFF5',
@@ -184,7 +184,7 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
               <div className="flex items-center gap-2">
                 {currentCard.sinoVietnamese && (
                   <span 
-                    className="text-xs font-black uppercase px-2.5 py-1 rounded-lg tracking-wider"
+                    className="text-[11px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg tracking-wider"
                     style={{
                       backgroundColor: isDarkMode ? '#2D3748' : activePreset.badgeBg,
                       color: activePreset.primary,
@@ -198,33 +198,33 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={(e) => playAudio(currentCard.kanji || currentCard.hiragana, e)}
-                  className="p-2 rounded-xl text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                  className="p-1.5 sm:p-2 rounded-xl text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                   title="Nghe phát âm từ vựng"
                 >
-                  <Volume2 className="w-5 h-5" />
+                  <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <button
                   onClick={handleMarkMastered}
-                  className={`p-2 rounded-xl transition-all ${
+                  className={`p-1.5 sm:p-2 rounded-xl transition-all ${
                     isMastered
                       ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400'
                       : 'text-gray-400 hover:text-emerald-500'
                   }`}
                   title={isMastered ? 'Đã thành thạo' : 'Đánh dấu đã thuộc'}
                 >
-                  <CheckCircle2 className="w-5 h-5" />
+                  <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
 
             {/* Center: Large Kanji & Hiragana Furigana */}
             <div className="text-center my-auto">
-              <ruby className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-gray-50 tracking-wider">
+              <ruby className="text-3xl sm:text-5xl font-black text-gray-900 dark:text-gray-50 tracking-wider">
                 {currentCard.kanji}
-                <rt className="text-base sm:text-lg text-gray-500 dark:text-gray-400 font-bold mb-1">
+                <rt className="text-sm sm:text-lg text-gray-500 dark:text-gray-400 font-bold mb-1">
                   {currentCard.hiragana}
                 </rt>
               </ruby>
@@ -241,7 +241,7 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
 
           {/* BACK FACE (Nghĩa Tiếng Việt + Câu ví dụ có Furigana) */}
           <div 
-            className="absolute inset-0 w-full h-full rounded-3xl p-8 border shadow-lg flex flex-col justify-between rotate-y-180 backface-hidden"
+            className="absolute inset-0 w-full h-full rounded-3xl p-4 sm:p-8 border shadow-lg flex flex-col justify-between rotate-y-180 backface-hidden"
             style={{
               backgroundColor: isDarkMode ? '#232A35' : activePreset.light,
               borderColor: activePreset.primary,
@@ -250,14 +250,14 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
             {/* Top Bar on Back */}
             <div className="flex items-center justify-between">
               <span 
-                className="text-xs font-bold px-2 py-0.5 rounded-md"
+                className="text-[11px] sm:text-xs font-bold px-2 py-0.5 rounded-md"
                 style={{ backgroundColor: activePreset.badgeBg, color: activePreset.primary }}
               >
                 Mặt sau: Giải nghĩa & Ví dụ
               </span>
               <button
                 onClick={(e) => playAudio(currentCard.sentenceJa || currentCard.kanji, e)}
-                className="p-1.5 rounded-xl text-blue-500 hover:bg-blue-100 transition-colors"
+                className="p-1 sm:p-1.5 rounded-xl text-blue-500 hover:bg-blue-100 transition-colors"
                 title="Nghe câu ví dụ"
               >
                 <Volume2 className="w-4 h-4" />
@@ -265,25 +265,25 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
             </div>
 
             {/* Center: Meaning & Example */}
-            <div className="space-y-4 my-auto">
+            <div className="space-y-3 sm:space-y-4 my-auto overflow-y-auto max-h-[75%] pr-1">
               <div>
-                <h3 className="text-xl sm:text-2xl font-black text-gray-950 dark:text-white">
+                <h3 className="text-lg sm:text-2xl font-black text-gray-950 dark:text-white">
                   {currentCard.meaningVi}
                 </h3>
               </div>
 
               {currentCard.sentenceJa && (
                 <div 
-                  className="p-4 rounded-2xl border"
+                  className="p-3 sm:p-4 rounded-2xl border"
                   style={{
                     backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
                     borderColor: isDarkMode ? '#374151' : '#CBD5E1',
                   }}
                 >
-                  <div className="text-sm sm:text-base font-bold text-gray-950 dark:text-white leading-relaxed">
+                  <div className="text-xs sm:text-base font-bold text-gray-950 dark:text-white leading-relaxed">
                     <FuriganaText content={currentCard.sentenceFurigana || currentCard.sentenceJa} />
                   </div>
-                  <p className="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-100 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-[11px] sm:text-sm font-bold text-gray-950 dark:text-gray-100 mt-1.5 pt-1.5 border-t border-gray-200 dark:border-gray-700">
                     → {currentCard.sentenceVi}
                   </p>
                 </div>
@@ -299,11 +299,11 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-1.5 sm:gap-2">
         <button
           id="btn-flashcard-prev"
           onClick={handlePrev}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-transform active:scale-95 shadow-xs"
+          className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl border text-[11px] sm:text-xs font-bold transition-transform active:scale-95 shadow-xs"
           style={{
             backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
             borderColor: isDarkMode ? '#2D3748' : '#E2E8F0',
@@ -311,13 +311,13 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
           }}
         >
           <ChevronLeft className="w-4 h-4" />
-          Quay lại
+          <span>Quay lại</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => setIsFlipped(!isFlipped)}
-            className="p-2.5 rounded-2xl border transition-all hover:opacity-80"
+            className="p-2 sm:p-2.5 rounded-2xl border transition-all hover:opacity-80 active:scale-95"
             style={{
               backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
               borderColor: isDarkMode ? '#2D3748' : '#E2E8F0',
@@ -328,18 +328,18 @@ export const FlashcardSection: React.FC<FlashcardSectionProps> = ({
             <RotateCcw className="w-4 h-4" />
           </button>
 
-          <span className="text-xs font-bold text-gray-500">
-            {knownIds.size} / {activeCards.length} Đã thuộc
+          <span className="text-[10px] sm:text-xs font-bold text-gray-500 whitespace-nowrap">
+            {knownIds.size}/{activeCards.length} Thuộc
           </span>
         </div>
 
         <button
           id="btn-flashcard-next"
           onClick={handleNext}
-          className="flex items-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-white transition-transform active:scale-95 shadow-xs"
+          className="flex items-center gap-1 sm:gap-1.5 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-[11px] sm:text-xs font-bold text-white transition-transform active:scale-95 shadow-xs"
           style={{ backgroundColor: activePreset.primary }}
         >
-          Tiếp theo
+          <span>Tiếp theo</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>

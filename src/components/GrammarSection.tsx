@@ -281,7 +281,7 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
         </div>
 
         {/* Action buttons: Import PDF + Add Grammar */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* PDF Upload Button */}
           <label
             id="btn-upload-grammar-pdf"
@@ -291,7 +291,7 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
                 onRequireLogin('import file PDF ngữ pháp');
               }
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all hover:opacity-85 active:scale-95 shadow-2xs"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all hover:opacity-85 active:scale-95 shadow-2xs"
             style={{
               backgroundColor: isDarkMode ? '#28313E' : '#F8FAFC',
               borderColor: isDarkMode ? '#3A4759' : '#CBD5E1',
@@ -320,7 +320,7 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
               }
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 shadow-xs cursor-pointer"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 shadow-xs cursor-pointer"
             style={{ backgroundColor: activePreset.primary }}
           >
             <Plus className="w-4 h-4" />
@@ -332,7 +332,7 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
       {/* Main Two-Column Layout: Left List + Right Detail */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Search + List of Grammar Points */}
-        <div className="lg:col-span-5 space-y-3">
+        <div id="grammar-list-top" className="lg:col-span-5 space-y-3">
           {/* Search Box */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -393,6 +393,9 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
                       return;
                     }
                     setSelectedGrammarId(item.id);
+                    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                      document.getElementById('grammar-detail-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }
                   }}
                   className={`p-3.5 rounded-2xl border cursor-pointer transition-all duration-150 flex items-center justify-between ${
                     isSelected 
@@ -462,15 +465,24 @@ export const GrammarSection: React.FC<GrammarSectionProps> = ({
         </div>
 
         {/* Right Column: Selected Grammar Deep Dive */}
-        <div className="lg:col-span-7">
+        <div id="grammar-detail-section" className="lg:col-span-7">
           {selectedGrammar ? (
             <div 
-              className="p-6 rounded-3xl border shadow-sm space-y-5"
+              className="p-4 sm:p-6 rounded-3xl border shadow-sm space-y-4 sm:space-y-5"
               style={{
                 backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
                 borderColor: isDarkMode ? '#2D3748' : '#E8EEF5',
               }}
             >
+              {/* Back button on mobile */}
+              <button
+                type="button"
+                onClick={() => document.getElementById('grammar-list-top')?.scrollIntoView({ behavior: 'smooth' })}
+                className="lg:hidden text-xs font-bold text-blue-500 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                ← Quay lại danh sách mẫu câu
+              </button>
+
               {/* Title & Action */}
               <div className="border-b pb-4 flex items-start justify-between gap-3"
                 style={{ borderColor: isDarkMode ? '#2D3748' : '#E8EEF5' }}

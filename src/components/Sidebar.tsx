@@ -280,7 +280,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Drawer Panel */}
           <aside
             id="app-sidebar-mobile"
-            className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full flex flex-col border-r shadow-2xl animate-in slide-in-from-left duration-200 overscroll-contain select-none"
+            className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full flex flex-col border-r shadow-2xl animate-in slide-in-from-left duration-200 overscroll-contain select-none pb-[env(safe-area-inset-bottom,0px)]"
             style={{
               backgroundColor: isDarkMode ? '#171B21' : '#FFFFFF',
               borderColor: isDarkMode ? '#28313E' : '#E8EEF5',

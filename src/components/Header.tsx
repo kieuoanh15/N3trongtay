@@ -105,18 +105,18 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header 
       id="app-header"
-      className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b transition-colors duration-200 backdrop-blur-md shrink-0"
+      className="sticky top-0 z-30 flex items-center justify-between px-2 sm:px-4 py-1.5 sm:py-3 border-b transition-colors duration-200 backdrop-blur-md shrink-0 w-full max-w-full"
       style={{
         backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFFE8',
         borderColor: isDarkMode ? '#2D3748' : '#EAEFF5',
       }}
     >
       {/* Left: Sidebar Toggle + Title */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 sm:gap-3 min-w-0">
         <button
           id="btn-sidebar-toggle"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-xl transition-colors hover:opacity-80 active:scale-95"
+          className="p-1.5 sm:p-2 rounded-xl transition-colors hover:opacity-80 active:scale-95 shrink-0 cursor-pointer"
           style={{
             backgroundColor: isDarkMode ? '#2D3748' : activePreset.badgeBg,
             color: activePreset.primary,
@@ -124,26 +124,26 @@ export const Header: React.FC<HeaderProps> = ({
           title="Bật/Tắt thanh điều hướng"
           aria-label="Toggle sidebar"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-1 sm:gap-2.5 min-w-0">
           <div 
-            className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-base shadow-sm"
+            className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center font-black text-white text-xs sm:text-base shadow-sm shrink-0"
             style={{ backgroundColor: activePreset.primary }}
           >
             N3
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <h1 
-                className="text-lg font-extrabold tracking-tight"
+                className="text-xs sm:text-base md:text-lg font-extrabold tracking-tight truncate max-w-[85px] xs:max-w-[140px] sm:max-w-none"
                 style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}
               >
                 N3 trong tay
               </h1>
               <span 
-                className="text-[11px] font-bold px-2 py-0.5 rounded-full nowrap-label"
+                className="hidden md:inline-block text-[11px] font-bold px-2 py-0.5 rounded-full nowrap-label"
                 style={{
                   backgroundColor: activePreset.badgeBg,
                   color: activePreset.primary,
@@ -153,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
             <p 
-              className="text-[11px] hidden sm:block font-medium"
+              className="text-[11px] hidden lg:block font-medium truncate"
               style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}
             >
               Chinh phục JLPT N3 toàn diện trong 3 tháng
@@ -163,12 +163,12 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right: Interactive Stats (Streak, Gold) + Palette + Dark Mode + Profile */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         {/* Streak Button (Clickable -> Opens Streak Info Modal) */}
         <button 
           id="btn-streak-modal"
           onClick={() => setShowStreakModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
+          className="flex items-center gap-1 px-1.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-black transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs shrink-0"
           style={{
             backgroundColor: isDarkMode ? '#34261A' : '#FFF7ED',
             color: '#EA580C',
@@ -176,15 +176,15 @@ export const Header: React.FC<HeaderProps> = ({
           }}
           title="Nhấn để xem chi tiết Chuỗi ngày học tập & Điểm danh"
         >
-          <Flame className="w-4 h-4 text-orange-500 animate-pulse fill-orange-500" />
-          <span>{user.streakDays} ngày</span>
+          <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 animate-pulse fill-orange-500 shrink-0" />
+          <span>{user.streakDays}<span className="hidden xs:inline"> ngày</span></span>
         </button>
 
         {/* Gold Counter Button (Clickable -> Opens Gold Vault Modal) */}
         <button 
           id="btn-gold-modal"
           onClick={() => setShowGoldModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
+          className="flex items-center gap-1 px-1.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-black transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs shrink-0"
           style={{
             backgroundColor: isDarkMode ? '#362E19' : '#FEFCE8',
             color: '#B45309',
@@ -192,7 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
           }}
           title="Nhấn để xem Kho Vàng & Cách kiếm thêm Vàng"
         >
-          <Coins className="w-4 h-4 text-amber-500 fill-amber-400" />
+          <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 fill-amber-400 shrink-0" />
           <span>{user.gold}</span>
         </button>
 
@@ -201,20 +201,20 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="btn-color-palette"
             onClick={() => setShowColorMenu(!showColorMenu)}
-            className="p-2 rounded-xl transition-colors hover:opacity-80 active:scale-95 cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl transition-colors hover:opacity-80 active:scale-95 cursor-pointer shrink-0"
             style={{
               backgroundColor: isDarkMode ? '#2D3748' : activePreset.badgeBg,
               color: activePreset.primary,
             }}
             title="Tùy biến bảng màu Pastel"
           >
-            <Palette className="w-4 h-4" />
+            <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
           {showColorMenu && (
             <div 
               id="color-menu-dropdown"
-              className="absolute right-0 mt-2 w-64 p-3 rounded-2xl shadow-xl border z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+              className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] p-3 rounded-2xl shadow-xl border z-50 animate-in fade-in slide-in-from-top-2 duration-150"
               style={{
                 backgroundColor: isDarkMode ? '#1E232A' : '#FFFFFF',
                 borderColor: isDarkMode ? '#374151' : '#E2E8F0',
@@ -294,21 +294,21 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           id="btn-darkmode-toggle"
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="p-2 rounded-xl transition-colors hover:opacity-80 active:scale-95 cursor-pointer"
+          className="p-1.5 sm:p-2 rounded-xl transition-colors hover:opacity-80 active:scale-95 cursor-pointer shrink-0"
           style={{
             backgroundColor: isDarkMode ? '#2D3748' : '#F1F5F9',
             color: isDarkMode ? '#FBBF24' : '#475569',
           }}
           title={isDarkMode ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối'}
         >
-          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          {isDarkMode ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
         </button>
 
         {/* User Account Button with Active Equipped Avatar Graphic */}
         <button
           id="btn-user-profile"
           onClick={onOpenAuth}
-          className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-xl transition-transform active:scale-95 border hover:opacity-90 cursor-pointer shadow-2xs"
+          className="flex items-center gap-1 sm:gap-2 p-1 sm:pl-1.5 sm:pr-3 sm:py-1 rounded-xl transition-transform active:scale-95 border hover:opacity-90 cursor-pointer shadow-2xs shrink-0"
           style={{
             backgroundColor: isDarkMode ? '#2D3748' : '#FFFFFF',
             borderColor: isDarkMode ? '#4B5563' : '#CBD5E1',
@@ -316,16 +316,16 @@ export const Header: React.FC<HeaderProps> = ({
           title="Tài khoản & Quản lý dữ liệu"
         >
           <div 
-            className="w-7 h-7 rounded-lg flex items-center justify-center p-0.5 shadow-xs border"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center p-0.5 shadow-xs border shrink-0"
             style={{ 
               backgroundColor: isDarkMode ? '#1E242C' : activePreset.badgeBg,
               borderColor: activePreset.primary,
             }}
           >
-            <ItemGraphic itemId={user.equippedAvatar || 'avatar-tanuki'} className="w-5 h-5" fallbackEmoji="👤" />
+            <ItemGraphic itemId={user.equippedAvatar || 'avatar-tanuki'} className="w-4 h-4 sm:w-5 sm:h-5" fallbackEmoji="👤" />
           </div>
           <span 
-            className="text-xs font-bold max-w-[80px] sm:max-w-[110px] truncate"
+            className="text-xs font-bold max-w-[70px] sm:max-w-[110px] truncate hidden md:inline"
             style={{ color: isDarkMode ? '#F1F5F9' : '#0F172A' }}
           >
             {user.fullName || 'Học viên N3'}
